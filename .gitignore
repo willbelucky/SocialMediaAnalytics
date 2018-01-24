@@ -1,0 +1,13 @@
+# Created by .ignore support plugin (hsz.mobi)
+
+# PyCharm files
+.idea
+.cache
+
+# Log files
+*.log
+
+# Data files
+*.xls
+*.csv
+*.h5
