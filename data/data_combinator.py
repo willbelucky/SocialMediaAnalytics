@@ -64,7 +64,8 @@ def get_combinations(x: pd.DataFrame):
     for i in range(variable_number):
         column_name = columns[i][2:]
         x['sub_' + column_name] = x.iloc[:, i] - x.iloc[:, i + variable_number]
-        x['div_' + column_name] = x.iloc[:, i] / x.iloc[:, i + variable_number]
+        # For preventing DivideByZeroError, add small number to the divisor.
+        x['div_' + column_name] = x.iloc[:, i] / (x.iloc[:, i + variable_number] + 1e-20)
 
     combined_x = x.iloc[:, column_number:]
 
