@@ -4,6 +4,7 @@
 :Date: 2018. 1. 24.
 """
 import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
 
 
 def get_combinations(x: pd.DataFrame):
@@ -67,7 +68,12 @@ def get_combinations(x: pd.DataFrame):
         # For preventing DivideByZeroError, add small number to the divisor.
         x['div_' + column_name] = x.iloc[:, i] / (x.iloc[:, i + variable_number] + 1e-20)
 
+    # Use only combined columns.
     combined_x = x.iloc[:, column_number:]
+
+    # Transform features by scaling each feature to a given range.
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    combined_x = scaler.fit_transform(combined_x)
 
     return combined_x
 
