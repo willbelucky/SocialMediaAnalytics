@@ -3,14 +3,14 @@
 :Author: Jaekyoung Kim
 :Date: 2018. 1. 24.
 """
-import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
-from data.data_reader import get_training_data
 from data.data_combinator import get_combinations
-from stats.regression_calculator import get_ridge_regression
+from data.data_reader import get_training_data
 from evaluation.evaluator import evaluate_predictions
+from stats.regression_calculator import get_ridge_regression
 
 
 def draw_graph(from_alpha, to_alpha, step):
@@ -23,6 +23,7 @@ def draw_graph(from_alpha, to_alpha, step):
     evaluation_results_dict = {'alpha': [], 'accuracy': [], 'f1_score': [], 'MSE': []}
     for alpha in np.arange(from_alpha, to_alpha, step):
         y_prediction = get_ridge_regression(x_train, y_train, x_val, alpha)
+        # noinspection PyPep8Naming
         accuracy, f1_score, MSE = evaluate_predictions(y_val, y_prediction)
         evaluation_results_dict['alpha'].append(alpha)
         evaluation_results_dict['accuracy'].append(accuracy)
