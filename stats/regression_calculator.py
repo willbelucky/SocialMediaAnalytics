@@ -5,7 +5,23 @@
 """
 import pandas as pd
 
-from sklearn.linear_model import Ridge
+from sklearn.linear_model import Ridge, LogisticRegression
+
+
+def get_logistic_regression(x_train, y_train, x_test):
+    """
+
+    :param x_train:
+    :param y_train:
+    :param x_test:
+    :return:
+    """
+    model = LogisticRegression()
+    model.fit(x_train, y_train)
+
+    y_prediction = model.predict(X=x_test)
+
+    return pd.Series(y_prediction)
 
 
 def get_ridge_regression(x_train, y_train, x_test, alpha):
@@ -37,6 +53,14 @@ if __name__ == '__main__':
     x_val = get_combinations(x_val)
     y_val = y_val.reset_index(drop=True)
 
+    print('Logistic Regression')
+    y_prediction = get_logistic_regression(x_train, y_train, x_val)
+    result = pd.concat([y_val, y_prediction], axis=1)
+    print(result.head())
+    print('-' * 70)
+
+    print('Ridge Regression')
     y_prediction = get_ridge_regression(x_train, y_train, x_val, alpha)
     result = pd.concat([y_val, y_prediction], axis=1)
     print(result.head())
+    print('-' * 70)
