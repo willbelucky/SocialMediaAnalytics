@@ -20,7 +20,7 @@ def get_ridge_regression(x_train, y_train, x_test, alpha):
     model = Ridge(alpha=alpha)
     model.fit(x_train, y_train)
 
-    y_prediction = model.predict(x_test)
+    y_prediction = model.predict(X=x_test)
 
     return pd.Series(y_prediction)
 
