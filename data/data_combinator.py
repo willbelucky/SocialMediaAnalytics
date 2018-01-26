@@ -70,10 +70,12 @@ def get_combinations(x: pd.DataFrame):
 
     # Use only combined columns.
     combined_x = x.iloc[:, column_number:]
+    combined_columns = combined_x.columns
 
     # Transform features by scaling each feature to a given range.
     scaler = MinMaxScaler(feature_range=(0, 1))
     combined_x = scaler.fit_transform(combined_x)
+    combined_x = pd.DataFrame(data=combined_x, columns=combined_columns)
 
     return combined_x
 
