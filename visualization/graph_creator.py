@@ -10,7 +10,7 @@ import pandas as pd
 from data.data_combinator import get_combinations
 from data.data_reader import get_training_data
 from evaluation.evaluator import evaluate_predictions
-from stats.regression_calculator import get_ridge_regression, get_logistic_regression
+from stats.regression_calculator import get_ridge_regression, get_logistic_regression, get_lasso_regression
 
 # A key for index value.
 ALPHA = 'alpha'
@@ -22,6 +22,10 @@ LOGISTIC_F1_SCORE = 'logistic_f1_score'
 # Keys for ridge regression.
 RIDGE_ACCURACY = 'ridge_accuracy'
 RIDGE_F1_SCORE = 'ridge_f1_score'
+
+# Keys for lasso regression.
+LASSO_ACCURACY = 'lasso_accuracy'
+LASSO_F1_SCORE = 'lasso_f1_score'
 
 
 # noinspection PyPep8Naming
@@ -35,17 +39,23 @@ def draw_graph(from_alpha, to_alpha, step):
     # Dictionary for saving results.
     evaluation_results_dict = {ALPHA: [],
                                LOGISTIC_ACCURACY: [], LOGISTIC_F1_SCORE: [],
-                               RIDGE_ACCURACY: [], RIDGE_F1_SCORE: []}
+                               RIDGE_ACCURACY: [], RIDGE_F1_SCORE: [],
+                               LASSO_ACCURACY: [], LASSO_F1_SCORE: []}
 
     # Logistic regression
-    y_prediction = get_logistic_regression(x_train, y_train, x_val)
-    logistic_accuracy, logistic_f1_score, logistic_MSE = evaluate_predictions(y_val, y_prediction)
+    logistic_y_prediction = get_logistic_regression(x_train, y_train, x_val)
+    logistic_accuracy, logistic_f1_score = evaluate_predictions(y_val, logistic_y_prediction)
 
-    # Ridge regression
     for alpha in np.arange(from_alpha, to_alpha, step):
-        y_prediction = get_ridge_regression(x_train, y_train, x_val, alpha)
+        # Ridge regression
+        ridge_y_prediction = get_ridge_regression(x_train, y_train, x_val, alpha)
         # noinspection PyPep8Naming
-        ridge_accuracy, ridge_f1_score, ridge_MSE = evaluate_predictions(y_val, y_prediction)
+        ridge_accuracy, ridge_f1_score = evaluate_predictions(y_val, ridge_y_prediction)
+
+        # Lasso regression
+        lasso_y_prediction = get_lasso_regression(x_train, y_train, x_val, alpha)
+        # noinspection PyPep8Naming
+        lasso_accuracy, lasso_f1_score = evaluate_predictions(y_val, lasso_y_prediction)
 
         # Save index values.
         evaluation_results_dict[ALPHA].append(alpha)
@@ -57,6 +67,10 @@ def draw_graph(from_alpha, to_alpha, step):
         # Save results of ridge regression.
         evaluation_results_dict[RIDGE_ACCURACY].append(ridge_accuracy)
         evaluation_results_dict[RIDGE_F1_SCORE].append(ridge_f1_score)
+
+        # Save results of lasso regression.
+        evaluation_results_dict[LASSO_ACCURACY].append(lasso_accuracy)
+        evaluation_results_dict[LASSO_F1_SCORE].append(lasso_f1_score)
 
     evaluation_results_df = pd.DataFrame(data=evaluation_results_dict)
 
@@ -71,10 +85,10 @@ def draw_graph(from_alpha, to_alpha, step):
           .format(highest_accuracy_row[RIDGE_ACCURACY], highest_accuracy_row[ALPHA]))
 
     evaluation_results_df = evaluation_results_df.set_index([ALPHA])
-    evaluation_results_df.plot(title='Logistic Regression vs. Ridge Regression', grid=True, ylim=(0.5, 1))
+    evaluation_results_df.plot(title='Logistic vs. Ridge vs. Lasso', grid=True, ylim=(0.0, 1))
     plt.show()
 
 
 # An usage example
 if __name__ == '__main__':
-    draw_graph(0.01, 1.00, 0.01)
+    draw_graph(0.001, 0.200, 0.001)
