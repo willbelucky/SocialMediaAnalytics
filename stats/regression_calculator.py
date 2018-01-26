@@ -93,6 +93,18 @@ def get_lasso_regression(x_train, y_train, x_test, alpha, summary=False):
     return y_prediction
 
 
+def naive_bayes_classificate(x_train, y_train, x_test):
+    """
+    @todo Not yet written.
+
+    :param x_train:
+    :param y_train:
+    :param x_test:
+    :return:
+    """
+    pass
+
+
 # An usage example
 if __name__ == '__main__':
     from data.data_reader import get_training_data
