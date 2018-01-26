@@ -24,6 +24,7 @@ RIDGE_ACCURACY = 'ridge_accuracy'
 RIDGE_F1_SCORE = 'ridge_f1_score'
 
 
+# noinspection PyPep8Naming
 def draw_graph(from_alpha, to_alpha, step):
     assert from_alpha < to_alpha
 
@@ -58,6 +59,17 @@ def draw_graph(from_alpha, to_alpha, step):
         evaluation_results_dict[RIDGE_F1_SCORE].append(ridge_f1_score)
 
     evaluation_results_df = pd.DataFrame(data=evaluation_results_dict)
+
+    # Print peek points
+    highest_f1_score_row = \
+        evaluation_results_df.loc[evaluation_results_df[RIDGE_F1_SCORE].argmax(), [RIDGE_F1_SCORE, ALPHA]]
+    print('The highest f1_score={} when alpha={}'
+          .format(highest_f1_score_row[RIDGE_F1_SCORE], highest_f1_score_row[ALPHA]))
+    highest_accuracy_row = \
+        evaluation_results_df.loc[evaluation_results_df[RIDGE_ACCURACY].argmax(), [RIDGE_ACCURACY, ALPHA]]
+    print('The highest accuracy={} when alpha={}'
+          .format(highest_accuracy_row[RIDGE_ACCURACY], highest_accuracy_row[ALPHA]))
+
     evaluation_results_df = evaluation_results_df.set_index([ALPHA])
     evaluation_results_df.plot(title='Logistic Regression vs. Ridge Regression', grid=True, ylim=(0.5, 1))
     plt.show()
