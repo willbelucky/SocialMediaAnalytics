@@ -96,13 +96,13 @@ def get_lasso_regression(x_train, y_train, x_test, alpha, summary=False):
 # An usage example
 if __name__ == '__main__':
     from data.data_reader import get_training_data
-    from data.data_combinator import get_combinations
+    from data.data_combinator import get_full_combinations
 
     alpha = 0.001
 
     x_train, y_train, x_val, y_val = get_training_data(validation=True)
-    x_train = get_combinations(x_train)
-    x_val = get_combinations(x_val)
+    x_train = get_full_combinations(x_train)
+    x_val = get_full_combinations(x_val)
     y_val = y_val.reset_index(drop=True)
 
     print('Logistic Regression')
