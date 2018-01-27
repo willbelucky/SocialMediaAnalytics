@@ -49,3 +49,19 @@ if __name__ == '__main__':
     accuracy, f1_score = evaluate_predictions(y_val, y_prediction)
     print('accuracy:{}'.format(accuracy))
     print('f1_score:{}'.format(f1_score))
+
+if __name__ == '__main__':
+    from data.data_reader import get_training_data
+    from data.data_combinator import get_full_combinations
+    from stats.regression_calculator import get_naive_bayes
+
+    alpha = 1.0
+
+    x_train, y_train, x_val, y_val = get_training_data(validation=True)
+    x_train = get_full_combinations(x_train)
+    x_val = get_full_combinations(x_val)
+    y_prediction = get_naive_bayes(x_train, y_train, x_val)
+
+    accuracy, f1_score = evaluate_predictions(y_val, y_prediction)
+    print('accuracy:{}'.format(accuracy))
+    print('f1_score:{}'.format(f1_score))

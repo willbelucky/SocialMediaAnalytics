@@ -10,7 +10,7 @@ import pandas as pd
 from data.data_combinator import get_full_combinations, get_sub_combinations, get_div_combinations
 from data.data_reader import get_training_data
 from evaluation.evaluator import evaluate_predictions
-from stats.regression_calculator import get_ridge_regression, get_logistic_regression, get_lasso_regression
+from stats.regression_calculator import get_ridge_regression, get_logistic_regression, get_lasso_regression, get_linear_discriminant_analysis, get_quadratic_discriminant_analysis,get_naive_bayes
 
 # A key for index value.
 ALPHA = 'alpha'
@@ -27,6 +27,17 @@ RIDGE_F1_SCORE = 'ridge_f1_score'
 LASSO_ACCURACY = 'lasso_accuracy'
 LASSO_F1_SCORE = 'lasso_f1_score'
 
+# Keys for lda.
+LDA_ACCURACY = 'lda_accuracy'
+LDA_F1_SCORE = 'lda_f1_score'
+
+# Keys for qda.
+QDA_ACCURACY = 'qda_accuracy'
+QDA_F1_SCORE = 'qda_f1_score'
+
+# Keys for gnb.
+GNB_ACCURACY = 'gnb_accuracy'
+GNB_F1_SCORE = 'gnb_f1_score'
 
 def draw_regression_comparison_graph(from_alpha, to_alpha, step):
     assert from_alpha < to_alpha
@@ -39,11 +50,27 @@ def draw_regression_comparison_graph(from_alpha, to_alpha, step):
     evaluation_results_dict = {ALPHA: [],
                                LOGISTIC_ACCURACY: [], LOGISTIC_F1_SCORE: [],
                                RIDGE_ACCURACY: [], RIDGE_F1_SCORE: [],
-                               LASSO_ACCURACY: [], LASSO_F1_SCORE: []}
+                               LASSO_ACCURACY: [], LASSO_F1_SCORE: [],
+                               LDA_ACCURACY: [], LDA_F1_SCORE: [],
+                               QDA_ACCURACY: [], QDA_F1_SCORE: [],
+                               GNB_ACCURACY: [], GNB_F1_SCORE: [],
+                               }
 
     # Logistic regression
     logistic_y_prediction = get_logistic_regression(x_train, y_train, x_val)
     logistic_accuracy, logistic_f1_score = evaluate_predictions(y_val, logistic_y_prediction)
+
+    # LDA
+    lda_y_prediction = get_linear_discriminant_analysis(x_train, y_train, x_val)
+    lda_accuracy, lda_f1_score = evaluate_predictions(y_val, lda_y_prediction)
+
+    # QDA
+    qda_y_prediction = get_quadratic_discriminant_analysis(x_train, y_train, x_val)
+    qda_accuracy, qda_f1_score = evaluate_predictions(y_val, qda_y_prediction)
+
+    # GNB
+    gnb_y_prediction = get_naive_bayes(x_train, y_train, x_val)
+    gnb_accuracy, gnb_f1_score = evaluate_predictions(y_val, gnb_y_prediction)
 
     for alpha in np.arange(from_alpha, to_alpha, step):
         # Ridge regression
@@ -69,6 +96,20 @@ def draw_regression_comparison_graph(from_alpha, to_alpha, step):
         evaluation_results_dict[LASSO_ACCURACY].append(lasso_accuracy)
         evaluation_results_dict[LASSO_F1_SCORE].append(lasso_f1_score)
 
+        # Save results of lda.
+        evaluation_results_dict[LDA_ACCURACY].append(lda_accuracy)
+        evaluation_results_dict[LDA_F1_SCORE].append(lda_f1_score)
+
+        # Save results of qda.
+        evaluation_results_dict[QDA_ACCURACY].append(qda_accuracy)
+        evaluation_results_dict[QDA_F1_SCORE].append(qda_f1_score)
+
+        # Save results of gnb.
+        evaluation_results_dict[GNB_ACCURACY].append(gnb_accuracy)
+        evaluation_results_dict[GNB_F1_SCORE].append(gnb_f1_score)
+
+
+
     evaluation_results_df = pd.DataFrame(data=evaluation_results_dict)
 
     # Print peek points
@@ -82,8 +123,9 @@ def draw_regression_comparison_graph(from_alpha, to_alpha, step):
           .format(highest_accuracy_row[RIDGE_ACCURACY], highest_accuracy_row[ALPHA]))
 
     evaluation_results_df = evaluation_results_df.set_index([ALPHA])
-    evaluation_results_df.plot(title='Logistic vs. Ridge vs. Lasso', grid=True, ylim=(0.0, 1))
+    evaluation_results_df.plot(title='Logistic vs. Ridge vs. Lasso vs. GNB vs. LDA vs. QDA', grid=True, ylim=(0.0, 1))
     plt.show()
+
 
 
 # Keys for full combined ridge regression.
@@ -161,3 +203,4 @@ def draw_combination_comparison_graph(from_alpha, to_alpha, step):
 if __name__ == '__main__':
     draw_regression_comparison_graph(0.001, 0.200, 0.001)
     draw_combination_comparison_graph(0.01, 1.00, 0.01)
+
