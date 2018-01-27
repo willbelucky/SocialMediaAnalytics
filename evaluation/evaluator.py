@@ -28,7 +28,7 @@ def plot_confusion_matrix(confusion_matrix, class_names=None,
 
     print(confusion_matrix)
 
-    plt.imshow(confusion_matrix, cmap=plt.spectral(), interpolation='nearest')
+    plt.imshow(confusion_matrix, cmap='Blues', interpolation='nearest')
     plt.title(title)
     plt.colorbar()
     tick_marks = np.arange(len(class_names))
@@ -86,24 +86,17 @@ def evaluate_predictions(y_actual, y_prediction, confusion_matrix_plotting=False
 if __name__ == '__main__':
     from data.data_reader import get_training_data
     from data.data_combinator import get_full_combinations
-    from stats.regression_calculator import get_ridge_regression, get_naive_bayes
+    from stats.regression_calculator import get_lasso_regression
 
-    alpha = 1.0
+    alpha = 0.001
 
     x_train, y_train, x_val, y_val = get_training_data(validation=True)
     x_train = get_full_combinations(x_train)
     x_val = get_full_combinations(x_val)
 
     print('Ridge regression')
-    y_prediction = get_ridge_regression(x_train, y_train, x_val, alpha)
-    accuracy, f1_score = evaluate_predictions(y_val, y_prediction)
-    print('accuracy:{}'.format(accuracy))
-    print('f1_score:{}'.format(f1_score))
-    print('-' * 70)
-
-    print('Ridge regression')
-    y_prediction = get_naive_bayes(x_train, y_train, x_val)
-    accuracy, f1_score = evaluate_predictions(y_val, y_prediction)
+    y_prediction = get_lasso_regression(x_train, y_train, x_val, alpha)
+    accuracy, f1_score = evaluate_predictions(y_val, y_prediction, confusion_matrix_plotting=True)
     print('accuracy:{}'.format(accuracy))
     print('f1_score:{}'.format(f1_score))
     print('-' * 70)
