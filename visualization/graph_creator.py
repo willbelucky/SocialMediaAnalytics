@@ -36,6 +36,14 @@ GNB_F1_SCORE = 'gnb_f1_score'
 
 
 def draw_regression_comparison_graph(from_alpha, to_alpha, step):
+    """
+    This method shows you f1_score of all regression methods.
+
+    :param from_alpha: (float) from_alpha must be bigger than 0.
+    :param to_alpha: (float) to_alpha must be bigger than from_alpha
+    :param step: (float) The size of one step.
+    """
+    assert 0 < from_alpha
     assert from_alpha < to_alpha
 
     x_train, y_train, x_val, y_val = get_training_data(validation=True)
@@ -113,16 +121,25 @@ def draw_regression_comparison_graph(from_alpha, to_alpha, step):
 
 
 # Keys for full combined ridge regression.
-FULL_COMBINED_RIDGE_F1_SCORE = 'full_combined_ridge_f1_score'
+FULL_COMBINED_F1_SCORE = 'full_combined_f1_score'
 
 # Keys for sub combined ridge regression.
-SUB_COMBINED_RIDGE_F1_SCORE = 'sub_combined_ridge_f1_score'
+SUB_COMBINED_F1_SCORE = 'sub_combined_f1_score'
 
 # Keys for div combined ridge regression.
-DIV_COMBINED_RIDGE_F1_SCORE = 'div_combined_ridge_f1_score'
+DIV_COMBINED_F1_SCORE = 'div_combined_f1_score'
 
 
-def draw_combination_comparison_graph(from_alpha, to_alpha, step):
+def draw_combination_comparison_graph(regression_function, function_name, from_alpha, to_alpha, step):
+    """
+
+    :param regression_function: The regression function you want to see the graph.
+    :param function_name: The name of the function.
+    :param from_alpha: (float) from_alpha must be bigger than 0.
+    :param to_alpha: (float) to_alpha must be bigger than from_alpha
+    :param step: (float) The size of one step.
+    """
+    assert 0 < from_alpha
     assert from_alpha < to_alpha
 
     x_train, y_train, x_val, y_val = get_training_data(validation=True)
@@ -136,47 +153,52 @@ def draw_combination_comparison_graph(from_alpha, to_alpha, step):
     # Dictionary for saving results.
     evaluation_results_dict = {
         ALPHA: [],
-        FULL_COMBINED_RIDGE_F1_SCORE: [],
-        SUB_COMBINED_RIDGE_F1_SCORE: [],
-        DIV_COMBINED_RIDGE_F1_SCORE: [],
+        FULL_COMBINED_F1_SCORE: [],
+        SUB_COMBINED_F1_SCORE: [],
+        DIV_COMBINED_F1_SCORE: [],
     }
 
     for alpha in np.arange(from_alpha, to_alpha, step):
         # Full combined ridge regression
         full_combined_ridge_y_prediction = \
-            get_ridge_regression(full_combined_x_train, y_train, full_combined_x_val, alpha)
+            regression_function(full_combined_x_train, y_train, full_combined_x_val, alpha)
         _, full_combined_ridge_f1_score = evaluate_predictions(y_val, full_combined_ridge_y_prediction)
 
         # Sub combined ridge regression
         sub_combined_ridge_y_prediction = \
-            get_ridge_regression(sub_combined_x_train, y_train, sub_combined_x_val, alpha)
+            regression_function(sub_combined_x_train, y_train, sub_combined_x_val, alpha)
         _, sub_combined_ridge_f1_score = evaluate_predictions(y_val, sub_combined_ridge_y_prediction)
 
         # Div combined ridge regression
         div_combined_ridge_y_prediction = \
-            get_ridge_regression(div_combined_x_train, y_train, div_combined_x_val, alpha)
+            regression_function(div_combined_x_train, y_train, div_combined_x_val, alpha)
         _, div_combined_ridge_f1_score = evaluate_predictions(y_val, div_combined_ridge_y_prediction)
 
         # Save index values.
         evaluation_results_dict[ALPHA].append(alpha)
 
         # Save results of full combined ridge regression.
-        evaluation_results_dict[FULL_COMBINED_RIDGE_F1_SCORE].append(full_combined_ridge_f1_score)
+        evaluation_results_dict[FULL_COMBINED_F1_SCORE].append(full_combined_ridge_f1_score)
 
         # Save results of sub combined ridge regression.
-        evaluation_results_dict[SUB_COMBINED_RIDGE_F1_SCORE].append(sub_combined_ridge_f1_score)
+        evaluation_results_dict[SUB_COMBINED_F1_SCORE].append(sub_combined_ridge_f1_score)
 
         # Save results of div combined ridge regression.
-        evaluation_results_dict[DIV_COMBINED_RIDGE_F1_SCORE].append(div_combined_ridge_f1_score)
+        evaluation_results_dict[DIV_COMBINED_F1_SCORE].append(div_combined_ridge_f1_score)
 
     evaluation_results_df = pd.DataFrame(data=evaluation_results_dict)
 
     evaluation_results_df = evaluation_results_df.set_index([ALPHA])
-    evaluation_results_df.plot(title='Full vs. Sub vs. Div', grid=True, ylim=(0.5, 1))
+    evaluation_results_df.plot(title='{}: Full vs. Sub vs. Div'.format(function_name), grid=True, ylim=(0.0, 1))
     plt.show()
 
 
 # An usage example
 if __name__ == '__main__':
-    draw_regression_comparison_graph(0.001, 0.200, 0.001)
-    draw_combination_comparison_graph(0.01, 1.00, 0.01)
+    # draw_regression_comparison_graph(0.001, 0.200, 0.001)
+
+    # Set the function you want to test.
+    regression_function = get_naive_bayes
+    # Set the name of the function.
+    regression_function_name = 'Naive bayes'
+    draw_combination_comparison_graph(regression_function, regression_function_name, 0.001, 0.200, 0.001)

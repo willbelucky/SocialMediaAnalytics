@@ -5,22 +5,16 @@
 """
 import numpy as np
 import pandas as pd
-from sklearn.linear_model import Ridge, LogisticRegression, Lasso
-import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import roc_curve, roc_auc_score
-from sklearn.naive_bayes import GaussianNB
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as lda
 from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis as qda
-import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.datasets import fetch_mldata
+from sklearn.linear_model import Ridge, LogisticRegression, Lasso
+from sklearn.naive_bayes import GaussianNB
 
 COLUMN_NAME = 'column_name'
 COEFFICIENT_VALUE = 'coefficient_value'
 
 
-def get_logistic_regression(x_train, y_train, x_test):
+def get_logistic_regression(x_train, y_train, x_test, alpha=None, summary=False):
     """
 
     :param x_train: (DataFrame) The variables of train set.
@@ -102,7 +96,7 @@ def get_lasso_regression(x_train, y_train, x_test, alpha, summary=False):
     return y_prediction
 
 
-def get_linear_discriminant_analysis(x_train, y_train, x_test):
+def get_linear_discriminant_analysis(x_train, y_train, x_test, alpha=None, summary=False):
     """
     :param x_train:
     :param y_train:
@@ -116,10 +110,11 @@ def get_linear_discriminant_analysis(x_train, y_train, x_test):
     y_prediction = model.predict(X=x_test)
     y_prediction = pd.Series(y_prediction)
     # LDA_y_score = LDA.fit(x_train, y_train).decision_function(x_test)
-    # fpr_LDA, tpr_LDA, threashold_LDA = roc_curve(y_test, LDA_y_score)
+    # fpr_LDA, tpr_LDA, threshold_LDA = roc_curve(y_test, LDA_y_score)
     return y_prediction
 
-def get_quadratic_discriminant_analysis(x_train, y_train, x_test):
+
+def get_quadratic_discriminant_analysis(x_train, y_train, x_test, alpha=None, summary=False):
     """
     :param x_train:
     :param y_train:
@@ -132,10 +127,11 @@ def get_quadratic_discriminant_analysis(x_train, y_train, x_test):
     y_prediction = model.predict(X=x_test)
     y_prediction = pd.Series(y_prediction)
     # QDA_y_score = QDA.fit(x_train, y_train).decision_function(x_test)
-    # fpr_QDA, tpr_QDA, threashold_QDA = roc_curve(y_test, QDA_y_score)
+    # fpr_QDA, tpr_QDA, threshold_QDA = roc_curve(y_test, QDA_y_score)
     return y_prediction
 
-def get_naive_bayes(x_train, y_train, x_test):
+
+def get_naive_bayes(x_train, y_train, x_test, alpha=None, summary=False):
     """
     :param x_train:
     :param y_train:
@@ -148,7 +144,7 @@ def get_naive_bayes(x_train, y_train, x_test):
     y_prediction = model.predict(X=x_test)
     y_prediction = pd.Series(y_prediction)
     # GNB_y_score = GNB.fit(x_train, y_train).predict_proba(x_test)
-    # fpr_GNB, tpr_GNB, threashold_GNB = roc_curve(y_test, -GNB_y_score[:0])
+    # fpr_GNB, tpr_GNB, threshold_GNB = roc_curve(y_test, -GNB_y_score[:0])
     return y_prediction
 
 
