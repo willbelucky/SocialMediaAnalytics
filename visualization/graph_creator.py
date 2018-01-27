@@ -17,27 +17,29 @@ from stats.regression_calculator import get_ridge_regression, get_logistic_regre
 ALPHA = 'alpha'
 
 # Keys for logistic regression.
-LOGISTIC_F1_SCORE = 'logistic_f1_score'
+LOGISTIC_AUC = 'logistic_auc'
 
 # Keys for ridge regression.
-RIDGE_F1_SCORE = 'ridge_f1_score'
+RIDGE_AUC = 'ridge_auc'
 
 # Keys for lasso regression.
-LASSO_F1_SCORE = 'lasso_f1_score'
+LASSO_AUC = 'lasso_auc'
 
 # Keys for lda.
-LDA_F1_SCORE = 'lda_f1_score'
+LDA_AUC = 'lda_auc'
 
 # Keys for qda.
-QDA_F1_SCORE = 'qda_f1_score'
+QDA_AUC = 'qda_auc'
 
 # Keys for gnb.
-GNB_F1_SCORE = 'gnb_f1_score'
+GNB_AUC = 'gnb_auc'
+
+REGRESSION_COMPARISON_AUCS = [LOGISTIC_AUC, RIDGE_AUC, LASSO_AUC, LDA_AUC, QDA_AUC, GNB_AUC]
 
 
 def draw_regression_comparison_graph(from_alpha, to_alpha, step):
     """
-    This method shows you f1_score of all regression methods.
+    This method shows you AUC(Area Under the Curve) of all regression methods.
 
     :param from_alpha: (float) from_alpha must be bigger than 0.
     :param to_alpha: (float) to_alpha must be bigger than from_alpha
@@ -51,69 +53,62 @@ def draw_regression_comparison_graph(from_alpha, to_alpha, step):
     x_val = get_full_combinations(x_val)
 
     # Dictionary for saving results.
-    evaluation_results_dict = {
-        ALPHA: [],
-        LOGISTIC_F1_SCORE: [],
-        RIDGE_F1_SCORE: [],
-        LASSO_F1_SCORE: [],
-        LDA_F1_SCORE: [],
-        QDA_F1_SCORE: [],
-        GNB_F1_SCORE: [],
-    }
+    evaluation_results_dict = {ALPHA: []}
+    for auc in REGRESSION_COMPARISON_AUCS:
+        evaluation_results_dict[auc] = []
 
     # Logistic regression
     logistic_y_prediction = get_logistic_regression(x_train, y_train, x_val)
-    _, logistic_f1_score = evaluate_predictions(y_val, logistic_y_prediction)
+    _, _, logistic_auc = evaluate_predictions(y_val, logistic_y_prediction)
 
     # LDA
     lda_y_prediction = get_linear_discriminant_analysis(x_train, y_train, x_val)
-    _, lda_f1_score = evaluate_predictions(y_val, lda_y_prediction)
+    _, _, lda_auc = evaluate_predictions(y_val, lda_y_prediction)
 
     # QDA
     qda_y_prediction = get_quadratic_discriminant_analysis(x_train, y_train, x_val)
-    _, qda_f1_score = evaluate_predictions(y_val, qda_y_prediction)
+    _, _, qda_auc = evaluate_predictions(y_val, qda_y_prediction)
 
     # GNB
     gnb_y_prediction = get_naive_bayes(x_train, y_train, x_val)
-    _, gnb_f1_score = evaluate_predictions(y_val, gnb_y_prediction)
+    _, _, gnb_auc = evaluate_predictions(y_val, gnb_y_prediction)
 
     for alpha in np.arange(from_alpha, to_alpha, step):
         # Ridge regression
         ridge_y_prediction = get_ridge_regression(x_train, y_train, x_val, alpha)
-        _, ridge_f1_score = evaluate_predictions(y_val, ridge_y_prediction)
+        _, _, ridge_auc = evaluate_predictions(y_val, ridge_y_prediction)
 
         # Lasso regression
         lasso_y_prediction = get_lasso_regression(x_train, y_train, x_val, alpha)
-        _, lasso_f1_score = evaluate_predictions(y_val, lasso_y_prediction)
+        _, _, lasso_auc = evaluate_predictions(y_val, lasso_y_prediction)
 
         # Save index values.
         evaluation_results_dict[ALPHA].append(alpha)
 
         # Save results of logistic regression.
-        evaluation_results_dict[LOGISTIC_F1_SCORE].append(logistic_f1_score)
+        evaluation_results_dict[LOGISTIC_AUC].append(logistic_auc)
 
         # Save results of ridge regression.
-        evaluation_results_dict[RIDGE_F1_SCORE].append(ridge_f1_score)
+        evaluation_results_dict[RIDGE_AUC].append(ridge_auc)
 
         # Save results of lasso regression.
-        evaluation_results_dict[LASSO_F1_SCORE].append(lasso_f1_score)
+        evaluation_results_dict[LASSO_AUC].append(lasso_auc)
 
         # Save results of lda.
-        evaluation_results_dict[LDA_F1_SCORE].append(lda_f1_score)
+        evaluation_results_dict[LDA_AUC].append(lda_auc)
 
         # Save results of qda.
-        evaluation_results_dict[QDA_F1_SCORE].append(qda_f1_score)
+        evaluation_results_dict[QDA_AUC].append(qda_auc)
 
         # Save results of gnb.
-        evaluation_results_dict[GNB_F1_SCORE].append(gnb_f1_score)
+        evaluation_results_dict[GNB_AUC].append(gnb_auc)
 
     evaluation_results_df = pd.DataFrame(data=evaluation_results_dict)
 
     # Print peek points
-    highest_f1_score_row = \
-        evaluation_results_df.loc[evaluation_results_df[RIDGE_F1_SCORE].argmax(), [RIDGE_F1_SCORE, ALPHA]]
-    print('The highest f1_score={} when alpha={}'
-          .format(highest_f1_score_row[RIDGE_F1_SCORE], highest_f1_score_row[ALPHA]))
+    for auc in REGRESSION_COMPARISON_AUCS:
+        highest_auc_row = evaluation_results_df.loc[evaluation_results_df[auc].idxmax(), [auc, ALPHA]]
+        print('The highest {}={} when alpha={}'.format(auc, highest_auc_row[auc], highest_auc_row[ALPHA]))
 
     evaluation_results_df = evaluation_results_df.set_index([ALPHA])
     evaluation_results_df.plot(title='Logistic vs. Ridge vs. Lasso vs. GNB vs. LDA vs. QDA', grid=True, ylim=(0.0, 1))
@@ -121,13 +116,15 @@ def draw_regression_comparison_graph(from_alpha, to_alpha, step):
 
 
 # Keys for full combined ridge regression.
-FULL_COMBINED_F1_SCORE = 'full_combined_f1_score'
+FULL_COMBINED_AUC = 'full_combined_auc'
 
 # Keys for sub combined ridge regression.
-SUB_COMBINED_F1_SCORE = 'sub_combined_f1_score'
+SUB_COMBINED_AUC = 'sub_combined_auc'
 
 # Keys for div combined ridge regression.
-DIV_COMBINED_F1_SCORE = 'div_combined_f1_score'
+DIV_COMBINED_AUC = 'div_combined_auc'
+
+COMBINATION_COMPARISON_AUCS = [FULL_COMBINED_AUC, SUB_COMBINED_AUC, DIV_COMBINED_AUC]
 
 
 def draw_combination_comparison_graph(regression_function, function_name, from_alpha, to_alpha, step):
@@ -151,40 +148,37 @@ def draw_combination_comparison_graph(regression_function, function_name, from_a
     div_combined_x_val = get_div_combinations(x_val)
 
     # Dictionary for saving results.
-    evaluation_results_dict = {
-        ALPHA: [],
-        FULL_COMBINED_F1_SCORE: [],
-        SUB_COMBINED_F1_SCORE: [],
-        DIV_COMBINED_F1_SCORE: [],
-    }
+    evaluation_results_dict = {ALPHA: []}
+    for auc in COMBINATION_COMPARISON_AUCS:
+        evaluation_results_dict[auc] = []
 
     for alpha in np.arange(from_alpha, to_alpha, step):
         # Full combined ridge regression
         full_combined_ridge_y_prediction = \
             regression_function(full_combined_x_train, y_train, full_combined_x_val, alpha)
-        _, full_combined_ridge_f1_score = evaluate_predictions(y_val, full_combined_ridge_y_prediction)
+        _, _, full_combined_auc = evaluate_predictions(y_val, full_combined_ridge_y_prediction)
 
         # Sub combined ridge regression
         sub_combined_ridge_y_prediction = \
             regression_function(sub_combined_x_train, y_train, sub_combined_x_val, alpha)
-        _, sub_combined_ridge_f1_score = evaluate_predictions(y_val, sub_combined_ridge_y_prediction)
+        _, _, sub_combined_auc = evaluate_predictions(y_val, sub_combined_ridge_y_prediction)
 
         # Div combined ridge regression
         div_combined_ridge_y_prediction = \
             regression_function(div_combined_x_train, y_train, div_combined_x_val, alpha)
-        _, div_combined_ridge_f1_score = evaluate_predictions(y_val, div_combined_ridge_y_prediction)
+        _, _, div_combined_auc = evaluate_predictions(y_val, div_combined_ridge_y_prediction)
 
         # Save index values.
         evaluation_results_dict[ALPHA].append(alpha)
 
         # Save results of full combined ridge regression.
-        evaluation_results_dict[FULL_COMBINED_F1_SCORE].append(full_combined_ridge_f1_score)
+        evaluation_results_dict[FULL_COMBINED_AUC].append(full_combined_auc)
 
         # Save results of sub combined ridge regression.
-        evaluation_results_dict[SUB_COMBINED_F1_SCORE].append(sub_combined_ridge_f1_score)
+        evaluation_results_dict[SUB_COMBINED_AUC].append(sub_combined_auc)
 
         # Save results of div combined ridge regression.
-        evaluation_results_dict[DIV_COMBINED_F1_SCORE].append(div_combined_ridge_f1_score)
+        evaluation_results_dict[DIV_COMBINED_AUC].append(div_combined_auc)
 
     evaluation_results_df = pd.DataFrame(data=evaluation_results_dict)
 
@@ -195,7 +189,7 @@ def draw_combination_comparison_graph(regression_function, function_name, from_a
 
 # An usage example
 if __name__ == '__main__':
-    # draw_regression_comparison_graph(0.001, 0.200, 0.001)
+    draw_regression_comparison_graph(0.001, 0.200, 0.001)
 
     # Set the function you want to test.
     regression_function = get_naive_bayes
