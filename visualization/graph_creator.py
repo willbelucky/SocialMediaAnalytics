@@ -128,7 +128,11 @@ DIV_COMBINED_AUC = 'div_combined_auc'
 # Keys for log div combined ridge regression.
 LOG_DIV_COMBINED_AUC = 'log_div_combined_auc'
 
-COMBINATION_COMPARISON_AUCS = [FULL_COMBINED_AUC, SUB_COMBINED_AUC, DIV_COMBINED_AUC, LOG_DIV_COMBINED_AUC]
+# Keys for log div combined ridge regression.
+ROOT_DIV_COMBINED_AUC = 'root_div_combined_auc'
+
+COMBINATION_COMPARISON_AUCS = [FULL_COMBINED_AUC, SUB_COMBINED_AUC, DIV_COMBINED_AUC, LOG_DIV_COMBINED_AUC,
+                               ROOT_DIV_COMBINED_AUC]
 
 
 def draw_combination_comparison_graph(regression_function, function_name, from_alpha, to_alpha, step):
@@ -152,6 +156,8 @@ def draw_combination_comparison_graph(regression_function, function_name, from_a
     div_combined_x_val = get_div_combinations(x_val)
     log_div_combined_x_train = get_log_div_combinations(x_train)
     log_div_combined_x_val = get_log_div_combinations(x_val)
+    root_div_combined_x_train = get_log_div_combinations(x_train)
+    root_div_combined_x_val = get_log_div_combinations(x_val)
 
     # Dictionary for saving results.
     evaluation_results_dict = {ALPHA: []}
@@ -179,6 +185,11 @@ def draw_combination_comparison_graph(regression_function, function_name, from_a
             regression_function(log_div_combined_x_train, y_train, log_div_combined_x_val, alpha)
         _, _, log_div_combined_auc = evaluate_predictions(y_val, log_div_combined_ridge_y_prediction)
 
+        # Log div combined ridge regression
+        root_div_combined_ridge_y_prediction = \
+            regression_function(root_div_combined_x_train, y_train, root_div_combined_x_val, alpha)
+        _, _, root_div_combined_auc = evaluate_predictions(y_val, root_div_combined_ridge_y_prediction)
+
         # Save index values.
         evaluation_results_dict[ALPHA].append(alpha)
 
@@ -194,11 +205,14 @@ def draw_combination_comparison_graph(regression_function, function_name, from_a
         # Save results of div combined ridge regression.
         evaluation_results_dict[LOG_DIV_COMBINED_AUC].append(log_div_combined_auc)
 
+        # Save results of div combined ridge regression.
+        evaluation_results_dict[ROOT_DIV_COMBINED_AUC].append(root_div_combined_auc)
+
     evaluation_results_df = pd.DataFrame(data=evaluation_results_dict)
 
     evaluation_results_df = evaluation_results_df.set_index([ALPHA])
     evaluation_results_df.plot(
-        title='{}: Full vs. Sub vs. Div vs. LogDiv'.format(function_name),
+        title='{}: Full vs. Sub vs. Div vs. LogDiv vs. RootDiv'.format(function_name),
         grid=True,
         ylim=(0.0, 1)
     )
