@@ -122,7 +122,7 @@ if __name__ == '__main__':
     from stats.regression_calculator import get_ridge_regression, get_logistic_regression, get_lasso_regression, \
         get_linear_discriminant_analysis, get_quadratic_discriminant_analysis, get_naive_bayes
 
-    alpha = 0.002
+    alpha = 0.018
 
     x_train, y_train, x_val, y_val = get_training_data(validation=True)
     x_train = get_full_combinations(x_train)
