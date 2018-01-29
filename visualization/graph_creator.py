@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 from data.data_combinator import get_full_combinations, get_sub_combinations, get_div_combinations, \
-    get_log_div_combinations
+    get_log_div_combinations, get_self_combinations
 from data.data_reader import get_training_data
 from evaluation.evaluator import evaluate_predictions
 from stats.regression_calculator import get_ridge_regression, get_logistic_regression, get_lasso_regression, \
@@ -38,20 +38,21 @@ GNB_AUC = 'gnb_auc'
 REGRESSION_COMPARISON_AUCS = [LOGISTIC_AUC, RIDGE_AUC, LASSO_AUC, LDA_AUC, QDA_AUC, GNB_AUC]
 
 
-def draw_regression_comparison_graph(from_alpha, to_alpha, step):
+def draw_regression_comparison_graph(from_alpha, to_alpha, step, combination_function=get_full_combinations):
     """
     This method shows you AUC(Area Under the Curve) of all regression methods.
 
     :param from_alpha: (float) from_alpha must be bigger than 0.
     :param to_alpha: (float) to_alpha must be bigger than from_alpha
     :param step: (float) The size of one step.
+    :param combination_function: (function) The function getting combined data.
     """
     assert 0 < from_alpha
     assert from_alpha < to_alpha
 
     x_train, y_train, x_val, y_val = get_training_data(validation=True)
-    x_train = get_full_combinations(x_train)
-    x_val = get_full_combinations(x_val)
+    x_train = combination_function(x_train)
+    x_val = combination_function(x_val)
 
     # Dictionary for saving results.
     evaluation_results_dict = {ALPHA: []}
@@ -119,6 +120,9 @@ def draw_regression_comparison_graph(from_alpha, to_alpha, step):
 # Keys for full combined ridge regression.
 FULL_COMBINED_AUC = 'full_combined_auc'
 
+# Keys for self full combined ridge regression.
+SELF_FULL_COMBINED_AUC = 'self_full_combined_auc'
+
 # Keys for sub combined ridge regression.
 SUB_COMBINED_AUC = 'sub_combined_auc'
 
@@ -131,8 +135,8 @@ LOG_DIV_COMBINED_AUC = 'log_div_combined_auc'
 # Keys for log div combined ridge regression.
 ROOT_DIV_COMBINED_AUC = 'root_div_combined_auc'
 
-COMBINATION_COMPARISON_AUCS = [FULL_COMBINED_AUC, SUB_COMBINED_AUC, DIV_COMBINED_AUC, LOG_DIV_COMBINED_AUC,
-                               ROOT_DIV_COMBINED_AUC]
+COMBINATION_COMPARISON_AUCS = [FULL_COMBINED_AUC, SELF_FULL_COMBINED_AUC, SUB_COMBINED_AUC,
+                               DIV_COMBINED_AUC, LOG_DIV_COMBINED_AUC, ROOT_DIV_COMBINED_AUC]
 
 
 def draw_combination_comparison_graph(regression_function, function_name, from_alpha, to_alpha, step):
@@ -150,6 +154,8 @@ def draw_combination_comparison_graph(regression_function, function_name, from_a
     x_train, y_train, x_val, y_val = get_training_data(validation=True)
     full_combined_x_train = get_full_combinations(x_train)
     full_combined_x_val = get_full_combinations(x_val)
+    self_full_combined_x_train = get_self_combinations(x_train, get_full_combinations)
+    self_full_combined_x_val = get_self_combinations(x_val, get_full_combinations)
     sub_combined_x_train = get_sub_combinations(x_train)
     sub_combined_x_val = get_sub_combinations(x_val)
     div_combined_x_train = get_div_combinations(x_train)
@@ -169,6 +175,11 @@ def draw_combination_comparison_graph(regression_function, function_name, from_a
         full_combined_ridge_y_prediction = \
             regression_function(full_combined_x_train, y_train, full_combined_x_val, alpha)
         _, _, full_combined_auc = evaluate_predictions(y_val, full_combined_ridge_y_prediction)
+
+        # Self full combined ridge regression
+        self_full_combined_ridge_y_prediction = \
+            regression_function(self_full_combined_x_train, y_train, self_full_combined_x_val, alpha)
+        _, _, self_full_combined_auc = evaluate_predictions(y_val, self_full_combined_ridge_y_prediction)
 
         # Sub combined ridge regression
         sub_combined_ridge_y_prediction = \
@@ -196,6 +207,9 @@ def draw_combination_comparison_graph(regression_function, function_name, from_a
         # Save results of full combined ridge regression.
         evaluation_results_dict[FULL_COMBINED_AUC].append(full_combined_auc)
 
+        # Save results of self full combined ridge regression.
+        evaluation_results_dict[SELF_FULL_COMBINED_AUC].append(self_full_combined_auc)
+
         # Save results of sub combined ridge regression.
         evaluation_results_dict[SUB_COMBINED_AUC].append(sub_combined_auc)
 
@@ -212,7 +226,7 @@ def draw_combination_comparison_graph(regression_function, function_name, from_a
 
     evaluation_results_df = evaluation_results_df.set_index([ALPHA])
     evaluation_results_df.plot(
-        title='{}: Full vs. Sub vs. Div vs. LogDiv vs. RootDiv'.format(function_name),
+        title='{}: Full vs. SelfFull vs. Sub vs. Div vs. LogDiv vs. RootDiv'.format(function_name),
         grid=True,
         ylim=(0.0, 1)
     )
@@ -224,7 +238,7 @@ if __name__ == '__main__':
     draw_regression_comparison_graph(0.001, 0.200, 0.001)
 
     # Set the function you want to test.
-    regression_function = get_lasso_regression
+    regression_function = get_ridge_regression
     # Set the name of the function.
-    regression_function_name = 'Lasso regression'
+    regression_function_name = 'Ridge regression'
     draw_combination_comparison_graph(regression_function, regression_function_name, 0.001, 0.200, 0.001)

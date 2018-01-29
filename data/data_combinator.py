@@ -5,7 +5,7 @@
 """
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, PolynomialFeatures
 
 
 # noinspection PyUnresolvedReferences
@@ -104,6 +104,51 @@ def get_full_combinations(x: pd.DataFrame):
     scaler = MinMaxScaler(feature_range=(0, 1))
     combined_x = scaler.fit_transform(combined_x)
     combined_x = pd.DataFrame(data=combined_x, columns=combined_columns)
+
+    return combined_x
+
+
+def get_self_combinations(x: pd.DataFrame, combination_function=get_full_combinations, degree=2, interaction_only=False,
+                          include_bias=False):
+    """
+
+    :param x: (DataFrame) 22(variables) columns * N rows
+        columns A_follower_count    | (int)
+                A_following_count   | (int)
+                A_listed_count      | (int)
+                A_mentions_received | (float)
+                A_retweets_received | (float)
+                A_mentions_sent     | (float)
+                A_retweets_sent     | (float)
+                A_posts             | (float)
+                A_network_feature_1 | (int)
+                A_network_feature_2 | (float)
+                A_network_feature_3 | (float)
+                B_follower_count    | (int)
+                B_following_count   | (int)
+                B_listed_count      | (int)
+                B_mentions_received | (float)
+                B_retweets_received | (float)
+                B_mentions_sent     | (float)
+                B_retweets_sent     | (float)
+                B_posts             | (float)
+                B_network_feature_1 | (int)
+                B_network_feature_2 | (float)
+                B_network_feature_3 | (float)
+    :param combination_function: (function) The function getting combined data.
+    :param degree: (int) The degree of the polynomial features. Default = 2.
+    :param interaction_only: (bool) If true, only interaction features are produced:
+        features that are products of at most degree distinct input features (so not x[1] ** 2, x[0] * x[2] ** 3, etc.).
+    :param include_bias: (bool) If True (default), then include a bias column,
+        the feature in which all polynomial powers are zero
+        (i.e. a column of ones - acts as an intercept term in a linear model).
+    :return combined_x: (DataFrame)
+    """
+    x_copy = x.copy()
+    # noinspection PyTypeChecker
+    x_copy = combination_function(x_copy)
+    poly = PolynomialFeatures(degree=degree, interaction_only=interaction_only, include_bias=include_bias)
+    combined_x = poly.fit_transform(x_copy)
 
     return combined_x
 
