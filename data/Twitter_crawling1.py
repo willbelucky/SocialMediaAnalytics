@@ -17,7 +17,7 @@ auth.set_access_token(access_token, access_token_secret)
 
 api = tweepy.API(auth, wait_on_rate_limit=True)
 query = 'sport'
-max_tweets = 500
+max_tweets = 5000
 searched_tweets = [status._json for status in tweepy.Cursor(api.search, q=query).items(max_tweets)]
 json_strings = [json.dumps(json_obj) for json_obj in searched_tweets]
 
