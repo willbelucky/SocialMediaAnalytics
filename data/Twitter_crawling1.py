@@ -1,8 +1,10 @@
-import json
 import csv
-import tweepy
+import json
 from collections import defaultdict
+
 import pandas as pd
+import tweepy
+
 DATA_DIR = 'data/'
 
 consumer_key = 'V5KLfqh2ulO5ySisRXzuPoJlN'
@@ -19,9 +21,6 @@ max_tweets = 500
 searched_tweets = [status._json for status in tweepy.Cursor(api.search, q=query).items(max_tweets)]
 json_strings = [json.dumps(json_obj) for json_obj in searched_tweets]
 
-print(json_strings)
-
-
 d = defaultdict(list)
 """
     A (i)   Tweets   A               (A-A Tweets)                   
@@ -30,8 +29,6 @@ d = defaultdict(list)
       (iii) Mentions C               (A-C Mentions)
 
 """
-
-
 
 for i in range(max_tweets):
     datastore = json.loads(json_strings[i])
@@ -69,7 +66,6 @@ for i in range(max_tweets):
             print("RT")
             d["Column3"].append("RT")
 
-
             # B-B tweet
             print(datastore["entities"]["user_mentions"][0]['screen_name'])
             d["Column1"].append(str("@" + datastore["entities"]["user_mentions"][0]['screen_name']))
@@ -99,7 +95,7 @@ for i in range(max_tweets):
             # more than 2 people, start from RT @
             for j in range(number_of_users):
                 index_j = datastore["entities"]["user_mentions"][j]["indices"][0]
-                if datastore["text"][(index_j-3):(index_j-1)] == "RT":
+                if datastore["text"][(index_j - 3):(index_j - 1)] == "RT":
 
                     # column1
                     print(datastore["user"]["screen_name"])
@@ -114,7 +110,7 @@ for i in range(max_tweets):
                     d["Column3"].append("RT")
                     last_RT = j
 
-                    if last_RT == number_of_users-1:
+                    if last_RT == number_of_users - 1:
                         print(datastore["entities"]["user_mentions"][last_RT]['screen_name'])
                         d["Column1"].append(str("@" + datastore["entities"]["user_mentions"][last_RT]['screen_name']))
 
@@ -139,21 +135,6 @@ for i in range(max_tweets):
                     print("Mentions")
                     d["Column3"].append("Mentions")
 
-
-
-
-
-
 df = pd.DataFrame.from_dict(d)
 df.reset_index(drop=True)
 df.to_csv(DATA_DIR + 'my_file.csv', index=False)
-
-
-
-
-
-
-
-
-
-
