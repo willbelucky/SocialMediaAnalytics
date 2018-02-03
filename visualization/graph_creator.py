@@ -35,7 +35,10 @@ QDA_AUC = 'qda_auc'
 # Keys for gnb.
 GNB_AUC = 'gnb_auc'
 
-REGRESSION_COMPARISON_AUCS = [LOGISTIC_AUC, RIDGE_AUC, LASSO_AUC, LDA_AUC, QDA_AUC, GNB_AUC]
+# Keys for rf.
+RF_AUC = 'rf_auc'
+
+REGRESSION_COMPARISON_AUCS = [LOGISTIC_AUC, RIDGE_AUC, LASSO_AUC, LDA_AUC, QDA_AUC, GNB_AUC, RF_AUC]
 
 
 def draw_regression_comparison_graph(from_alpha, to_alpha, step, combination_function=get_full_combinations):
@@ -75,6 +78,10 @@ def draw_regression_comparison_graph(from_alpha, to_alpha, step, combination_fun
     gnb_y_prediction = get_naive_bayes(x_train, y_train, x_val)
     _, _, gnb_auc = evaluate_predictions(y_val, gnb_y_prediction)
 
+    # RF
+    rf_y_prediction = get_random_forest(x_train, y_train, x_val)
+    _, rf_auc = evaluate_predictions(y_val, rf_y_prediction)
+
     for alpha in np.arange(from_alpha, to_alpha, step):
         # Ridge regression
         ridge_y_prediction = get_ridge_regression(x_train, y_train, x_val, alpha)
@@ -104,6 +111,9 @@ def draw_regression_comparison_graph(from_alpha, to_alpha, step, combination_fun
 
         # Save results of gnb.
         evaluation_results_dict[GNB_AUC].append(gnb_auc)
+
+        # Save results of rf.
+        evaluation_results_dict[RF_AUC].append(rf_auc)
 
     evaluation_results_df = pd.DataFrame(data=evaluation_results_dict)
 

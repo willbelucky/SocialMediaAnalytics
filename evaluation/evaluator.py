@@ -112,7 +112,6 @@ def plot_roc_curves(y_actual, y_predictions):
         plot_roc_curve(fpr, tpr, AUC, title='Regression Comparison', label=key, color=cmaps(index))
 
     plt.plot([0, 1], [0, 1], color='navy', linestyle='--')
-    plt.show()
 
 
 # An usage example.
@@ -120,7 +119,7 @@ if __name__ == '__main__':
     from data.data_reader import get_training_data
     from data.data_combinator import get_full_combinations
     from stats.regression_calculator import get_ridge_regression, get_logistic_regression, get_lasso_regression, \
-        get_linear_discriminant_analysis, get_quadratic_discriminant_analysis, get_naive_bayes
+        get_linear_discriminant_analysis, get_quadratic_discriminant_analysis, get_naive_bayes, get_random_forest
 
     alpha = 0.063
 
@@ -145,6 +144,9 @@ if __name__ == '__main__':
         'Lasso regression, alpha={}'.format(alpha): get_lasso_regression(x_train, y_train, x_val, alpha),
         'LDA regression, alpha={}'.format(alpha): get_linear_discriminant_analysis(x_train, y_train, x_val, alpha),
         'QDA regression, alpha={}'.format(alpha): get_quadratic_discriminant_analysis(x_train, y_train, x_val, alpha),
-        'NB regression, alpha={}'.format(alpha): get_naive_bayes(x_train, y_train, x_val, alpha)
+        'NB regression, alpha={}'.format(alpha): get_naive_bayes(x_train, y_train, x_val, alpha),
+        'RF regression, alpha={}'.format(alpha): get_random_forest(x_train, y_train, x_val, alpha)
     }
     plot_roc_curves(y_val, y_predictions)
+    plt.show()
+

@@ -147,6 +147,34 @@ def get_naive_bayes(x_train, y_train, x_test, alpha=None, summary=False):
     # fpr_GNB, tpr_GNB, threshold_GNB = roc_curve(y_test, -GNB_y_score[:0])
     return y_prediction
 
+def get_random_forest(x_train, y_train, x_test, alpha=None):
+    """
+    :param x_train:
+    :param y_train:
+    :param x_test:
+    :return:
+    """
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.datasets import make_classification
+    n_features = len(x_train.columns)
+    x_train, y_train = make_classification(n_samples=5500, n_features=n_features,n_informative=2, n_redundant=0,random_state=0, shuffle=False)
+
+    model = RandomForestClassifier(max_depth=2, random_state=0)
+    model.fit(x_train, y_train)
+    RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
+                           max_depth=2, max_features='auto', max_leaf_nodes=None,
+                           min_impurity_decrease=0.0, min_impurity_split=None,
+                           min_samples_leaf=1, min_samples_split=2,
+                           min_weight_fraction_leaf=0.0, n_estimators=10, n_jobs=1,
+                           oob_score=False, random_state=0, verbose=0, warm_start=False)
+    print(model.feature_importances_)
+    print(model.predict([[0] * n_features]))
+    y_prediction = model.predict(X=x_test)
+    y_prediction = pd.Series(y_prediction)
+    # GNB_y_score = GNB.fit(x_train, y_train).predict_proba(x_test)
+    # fpr_GNB, tpr_GNB, threshold_GNB = roc_curve(y_test, -GNB_y_score[:0])
+    return y_prediction
+
 
 # An usage example
 if __name__ == '__main__':
@@ -192,6 +220,12 @@ if __name__ == '__main__':
 
     print('GNB')
     y_prediction = get_naive_bayes(x_train, y_train, x_val)
+    result = pd.concat([y_val, y_prediction], axis=1)
+    print(result.head())
+    print('-' * 70)
+
+    print('RandomForest')
+    y_prediction = get_random_forest(x_train, y_train, x_val)
     result = pd.concat([y_val, y_prediction], axis=1)
     print(result.head())
     print('-' * 70)
