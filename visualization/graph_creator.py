@@ -12,7 +12,7 @@ from data.data_combinator import get_full_combinations, get_sub_combinations, ge
 from data.data_reader import get_training_data
 from evaluation.evaluator import evaluate_predictions
 from stats.regression_calculator import get_ridge_regression, get_logistic_regression, get_lasso_regression, \
-    get_linear_discriminant_analysis, get_quadratic_discriminant_analysis, get_naive_bayes
+    get_linear_discriminant_analysis, get_quadratic_discriminant_analysis, get_naive_bayes, get_random_forest
 
 # A key for index value.
 ALPHA = 'alpha'
@@ -80,7 +80,7 @@ def draw_regression_comparison_graph(from_alpha, to_alpha, step, combination_fun
 
     # RF
     rf_y_prediction = get_random_forest(x_train, y_train, x_val)
-    _, rf_auc = evaluate_predictions(y_val, rf_y_prediction)
+    _, _, rf_auc = evaluate_predictions(y_val, rf_y_prediction)
 
     for alpha in np.arange(from_alpha, to_alpha, step):
         # Ridge regression
