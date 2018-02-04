@@ -3,8 +3,8 @@
 :Author: Jaekyoung Kim
 :Date: 2018. 2. 3.
 """
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 # The column names of following_count
 A_FOLLOWER_COUNT = 'A_following_count'
@@ -40,7 +40,8 @@ def get_influencer_follower_counts(test_data, y, y_val, column_name):
                 B_network_feature_1 | (int)
                 B_network_feature_2 | (float)
                 B_network_feature_3 | (float)
-    :param y: (Series) The y of test set. y could be a y_test or a y_prediction.
+    :param y: (Series) The y of the test set. y could be a y_test or a y_prediction.
+    :param y_val: (Series) The true y of the test set.
     :param column_name: (str) The name of follower_count. This must be A_follower_count or B_follower_count.
 
     :return influencer_follower_counts: (Series) The follower counts of influencers.
@@ -51,7 +52,7 @@ def get_influencer_follower_counts(test_data, y, y_val, column_name):
     assert len(y_val) == len(y)
     y_copy = y.copy()
 
-    follower_counts = test_data[column_name]
+    follower_counts = test_data[column_name].reset_index(drop=True)
 
     # If column_name == A_follower_count, we will calculate the sum of follower counts when A is an influencer.
     # Else, we will calculate the sum of follower counts when B is an influencer.
@@ -60,13 +61,15 @@ def get_influencer_follower_counts(test_data, y, y_val, column_name):
     # and we use (1 - y_prediction) to calculate the sum of follower counts when B is an influencer.
     if column_name == B_FOLLOWER_COUNT:
         y_copy = 1 - y_copy
+        y_val = 1 - y_val
 
     influencer_follower_counts = follower_counts * y_copy * y_val
 
     return influencer_follower_counts
 
 
-def get_model_value(test_data, y, y_val, is_y_prediction):
+# noinspection PyPep8Naming
+def get_model_value(test_data, y, y_val, is_y_prediction=True):
     """
 
     :param test_data: (DataFrame)
@@ -118,18 +121,31 @@ def get_model_value(test_data, y, y_val, is_y_prediction):
 
 if __name__ == '__main__':
     from data.data_reader import get_training_data
-    from stats.regression_calculator import get_ridge_regression
-    from evaluation.evaluator import custom_round
+    from data.data_combinator import get_full_combinations
+    from stats.regression_calculator import get_ridge_regression, get_lasso_regression, get_select_more_follower_count
 
-    alpha = 0.063
+    ridge_alpha = 0.062
+    lasso_alpha = 0.002
 
     x_train, y_train, x_val, y_val = get_training_data(validation=True)
+    original_x_val = x_val.copy().reset_index(drop=True)
+    x_train = get_full_combinations(x_train)
+    x_val = get_full_combinations(x_val)
+    y_val = y_val.reset_index(drop=True)
 
-    y_prediction = get_ridge_regression(x_train, y_train, x_val, alpha)
-    y_prediction = y_prediction.apply(custom_round)
+    ridge_regression_y_prediction = get_ridge_regression(x_train, y_train, x_val, 0.062)
+    lasso_regression_y_prediction = get_lasso_regression(x_train, y_train, x_val, lasso_alpha)
+    select_more_follower_count_y_prediction = get_select_more_follower_count(x_train, y_train, original_x_val)
 
-    print('Unanalysed:{}'.format(get_model_value(x_val, y_val, y_val, is_y_prediction=False)))
-    print('Perfectly analysed:{}'.format(get_model_value(x_val, y_val, y_val, is_y_prediction=True)))
-    print('Our model:{}'.format(get_model_value(x_val, y_prediction, y_val, is_y_prediction=True)))
-    print('All A model:{}'.format(get_model_value(x_val, pd.Series([1 for i in range(len(y_val))]), y_val, is_y_prediction=True)))
-    print('All B model:{}'.format(get_model_value(x_val, pd.Series([0 for i in range(len(y_val))]), y_val, is_y_prediction=True)))
+    print('Unanalysed:{0:.3f}'.format(get_model_value(original_x_val, y_val, y_val, is_y_prediction=False)))
+    print('Perfectly analysed:{0:.3f}'.format(get_model_value(original_x_val, y_val, y_val)))
+    print('ridge_regression(alpha={0:.3f}) model:{1:.3f}'.format(
+        ridge_alpha, get_model_value(original_x_val, ridge_regression_y_prediction, y_val)))
+    print('lasso_regression(alpha={0:.3f}) model:{1:.3f}'.format(
+        lasso_alpha, get_model_value(original_x_val, lasso_regression_y_prediction, y_val)))
+    print('select_more_follow_follower_count model:{0:.3f}'.format(
+        get_model_value(original_x_val, select_more_follower_count_y_prediction, y_val)))
+    print('All A model:{0:.3f}'.format(
+        get_model_value(original_x_val, pd.Series([1 for i in range(len(y_val))]), y_val)))
+    print('All B model:{0:.3f}'.format(
+        get_model_value(original_x_val, pd.Series([0 for i in range(len(y_val))]), y_val)))

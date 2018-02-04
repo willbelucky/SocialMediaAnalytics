@@ -5,8 +5,8 @@
 """
 import numpy as np
 import pandas as pd
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as lda
-from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis as qda
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 from sklearn.linear_model import Ridge, LogisticRegression, Lasso
 from sklearn.naive_bayes import GaussianNB
 
@@ -14,12 +14,19 @@ COLUMN_NAME = 'column_name'
 COEFFICIENT_VALUE = 'coefficient_value'
 
 
+def custom_round(number):
+    return 1 if number >= 0.5 else 0
+
+
+# noinspection PyUnusedLocal
 def get_logistic_regression(x_train, y_train, x_test, alpha=None, summary=False):
     """
 
     :param x_train: (DataFrame) The variables of train set.
     :param y_train: (Series) The correct answers of train set.
     :param x_test: (DataFrame) The variables of test set.
+    :param alpha:
+    :param summary:
 
     :return y_prediction: (Series) The predictions of test set.
     """
@@ -27,7 +34,7 @@ def get_logistic_regression(x_train, y_train, x_test, alpha=None, summary=False)
     model.fit(x_train, y_train)
 
     y_prediction = model.predict(X=x_test)
-    y_prediction = pd.Series(y_prediction)
+    y_prediction = pd.Series(y_prediction).apply(custom_round)
 
     return y_prediction
 
@@ -59,7 +66,7 @@ def get_ridge_regression(x_train, y_train, x_test, alpha, summary=False):
         print(model_coef)
 
     y_prediction = model.predict(X=x_test)
-    y_prediction = pd.Series(y_prediction)
+    y_prediction = pd.Series(y_prediction).apply(custom_round)
 
     return y_prediction
 
@@ -90,74 +97,89 @@ def get_lasso_regression(x_train, y_train, x_test, alpha, summary=False):
         model_coef = model_coef.sort_values(by=COEFFICIENT_VALUE, ascending=False)
         print(model_coef)
 
-    y_prediction = model.predict(x_test)
-    y_prediction = pd.Series(y_prediction)
+    y_prediction = model.predict(X=x_test)
+    y_prediction = pd.Series(y_prediction).apply(custom_round)
 
     return y_prediction
 
 
+# noinspection PyUnusedLocal
 def get_linear_discriminant_analysis(x_train, y_train, x_test, alpha=None, summary=False):
     """
     :param x_train:
     :param y_train:
     :param x_test:
-    :return:
+    :param alpha:
+    :param summary:
+
+    :return y_prediction: (Series) The predictions of test set.
     """
 
-    model = lda()
+    model = LinearDiscriminantAnalysis()
     model.fit(x_train, y_train)
 
     y_prediction = model.predict(X=x_test)
-    y_prediction = pd.Series(y_prediction)
-    # LDA_y_score = LDA.fit(x_train, y_train).decision_function(x_test)
-    # fpr_LDA, tpr_LDA, threshold_LDA = roc_curve(y_test, LDA_y_score)
+    y_prediction = pd.Series(y_prediction).apply(custom_round)
+
     return y_prediction
 
 
+# noinspection PyUnusedLocal
 def get_quadratic_discriminant_analysis(x_train, y_train, x_test, alpha=None, summary=False):
     """
     :param x_train:
     :param y_train:
     :param x_test:
-    :return:
+    :param alpha:
+    :param summary:
+
+    :return y_prediction: (Series) The predictions of test set.
     """
 
-    model = qda()
+    model = QuadraticDiscriminantAnalysis()
     model.fit(x_train, y_train)
     y_prediction = model.predict(X=x_test)
-    y_prediction = pd.Series(y_prediction)
-    # QDA_y_score = QDA.fit(x_train, y_train).decision_function(x_test)
-    # fpr_QDA, tpr_QDA, threshold_QDA = roc_curve(y_test, QDA_y_score)
+    y_prediction = pd.Series(y_prediction).apply(custom_round)
+
     return y_prediction
 
 
+# noinspection PyUnusedLocal
 def get_naive_bayes(x_train, y_train, x_test, alpha=None, summary=False):
     """
     :param x_train:
     :param y_train:
     :param x_test:
-    :return:
+    :param alpha:
+    :param summary:
+
+    :return y_prediction: (Series) The predictions of test set.
     """
 
     model = GaussianNB()
     model.fit(x_train, y_train)
     y_prediction = model.predict(X=x_test)
-    y_prediction = pd.Series(y_prediction)
-    # GNB_y_score = GNB.fit(x_train, y_train).predict_proba(x_test)
-    # fpr_GNB, tpr_GNB, threshold_GNB = roc_curve(y_test, -GNB_y_score[:0])
+    y_prediction = pd.Series(y_prediction).apply(custom_round)
+
     return y_prediction
 
-def get_random_forest(x_train, y_train, x_test, alpha=None):
+
+# noinspection PyUnusedLocal
+def get_random_forest(x_train, y_train, x_test, alpha=None, summary=False):
     """
     :param x_train:
     :param y_train:
     :param x_test:
-    :return:
+    :param alpha:
+    :param summary:
+
+    :return y_prediction: (Series) The predictions of test set.
     """
     from sklearn.ensemble import RandomForestClassifier
     from sklearn.datasets import make_classification
     n_features = len(x_train.columns)
-    x_train, y_train = make_classification(n_samples=5500, n_features=n_features,n_informative=2, n_redundant=0,random_state=0, shuffle=False)
+    x_train, y_train = make_classification(n_samples=5500, n_features=n_features, n_informative=2, n_redundant=0,
+                                           random_state=0, shuffle=False)
 
     model = RandomForestClassifier(max_depth=2, random_state=0)
     model.fit(x_train, y_train)
@@ -170,9 +192,30 @@ def get_random_forest(x_train, y_train, x_test, alpha=None):
     print(model.feature_importances_)
     print(model.predict([[0] * n_features]))
     y_prediction = model.predict(X=x_test)
-    y_prediction = pd.Series(y_prediction)
-    # GNB_y_score = GNB.fit(x_train, y_train).predict_proba(x_test)
-    # fpr_GNB, tpr_GNB, threshold_GNB = roc_curve(y_test, -GNB_y_score[:0])
+    y_prediction = pd.Series(y_prediction).apply(custom_round)
+
+    return y_prediction
+
+
+# The column names of following_count
+A_FOLLOWER_COUNT = 'A_following_count'
+B_FOLLOWER_COUNT = 'B_following_count'
+
+
+# noinspection PyUnusedLocal
+def get_select_more_follower_count(x_train, y_train, original_x_test, alpha=None, summary=False):
+    """
+
+    :param x_train:
+    :param y_train:
+    :param original_x_test:
+    :param alpha:
+    :param summary:
+
+    :return y_prediction: (Series) The predictions of test set.
+    """
+    y_prediction = pd.Series(np.where(original_x_test[A_FOLLOWER_COUNT] > original_x_test[B_FOLLOWER_COUNT], 1, 0))
+
     return y_prediction
 
 
@@ -185,26 +228,27 @@ if __name__ == '__main__':
 
     x_train, y_train, x_val, y_val = get_training_data(validation=True)
     x_train = get_full_combinations(x_train)
+    original_x_val = x_val.copy()
     x_val = get_full_combinations(x_val)
     y_val = y_val.reset_index(drop=True)
-    #
-    # prnt('Logistic Regression')
-    # y_prediction = get_logistic_regression(x_train, y_train, x_val)
-    # result = pd.concat([y_val, y_prediction], axis=1)
-    # print(result.head())
-    # print('-' * 70)
-    #
-    # print('Ridge Regression')
-    # y_prediction = get_ridge_regression(x_train, y_train, x_val, alpha)
-    # result = pd.concat([y_val, y_predi6y7`QDction], axis=1)
-    # print(result.head())
-    # print('-' * 70)
-    #
-    # print('Lasso Regression')
-    # y_prediction = get_lasso_regression(x_train, y_train, x_val, alpha, True)
-    # result = pd.concat([y_val, y_prediction], axis=1)
-    # print(result.head())
-    # print('-' * 70)
+
+    print('Logistic Regression')
+    y_prediction = get_logistic_regression(x_train, y_train, x_val)
+    result = pd.concat([y_val, y_prediction], axis=1)
+    print(result.head())
+    print('-' * 70)
+
+    print('Ridge Regression')
+    y_prediction = get_ridge_regression(x_train, y_train, x_val, alpha)
+    result = pd.concat([y_val, y_prediction], axis=1)
+    print(result.head())
+    print('-' * 70)
+
+    print('Lasso Regression')
+    y_prediction = get_lasso_regression(x_train, y_train, x_val, alpha, True)
+    result = pd.concat([y_val, y_prediction], axis=1)
+    print(result.head())
+    print('-' * 70)
 
     print('LDA')
     y_prediction = get_linear_discriminant_analysis(x_train, y_train, x_val)
@@ -226,6 +270,12 @@ if __name__ == '__main__':
 
     print('RandomForest')
     y_prediction = get_random_forest(x_train, y_train, x_val)
+    result = pd.concat([y_val, y_prediction], axis=1)
+    print(result.head())
+    print('-' * 70)
+
+    print('SelectMoreFollowerCount')
+    y_prediction = get_select_more_follower_count(x_train, y_train, original_x_val)
     result = pd.concat([y_val, y_prediction], axis=1)
     print(result.head())
     print('-' * 70)

@@ -39,10 +39,6 @@ def plot_roc_curve(fpr, tpr, AUC, title=None, label=None, color='darkorange'):
     plt.legend(loc="lower right")
 
 
-def custom_round(number):
-    return 1 if number >= 0.5 else 0
-
-
 # noinspection PyPep8Naming
 def evaluate_predictions(y_actual: pd.Series, y_prediction: pd.Series,
                          title=None, confusion_matrix_plotting=False, roc_curve_plotting=False):
@@ -63,8 +59,7 @@ def evaluate_predictions(y_actual: pd.Series, y_prediction: pd.Series,
     y_prediction = y_prediction.reset_index(drop=True)
     assert len(y_actual) == len(y_prediction)
 
-    y_prediction_round = y_prediction.apply(custom_round)
-    confusion_matrix = cm(y_actual, y_prediction_round)
+    confusion_matrix = cm(y_actual, y_prediction)
     TN, FP, FN, TP = confusion_matrix.ravel()
     Precision = TP / (TP + FP + 1e-20)  # The portion of actual 1 of prediction 1.
     Recall = TP / (TP + FN + 1e-20)  # The portion of prediction 1 of actual 1.
@@ -72,11 +67,11 @@ def evaluate_predictions(y_actual: pd.Series, y_prediction: pd.Series,
     f1_score = 2 / (1 / Precision + 1 / Recall + 1e-20)  # The harmonic mean of precision and recall.
 
     # Calculate ROC and AUC
-    fpr, tpr, _ = roc_curve(y_actual, y_prediction_round)
+    fpr, tpr, _ = roc_curve(y_actual, y_prediction)
     AUC = auc(fpr, tpr)
 
     if confusion_matrix_plotting:
-        plot_confusion_matrix(y_actual, y_prediction_round, title=title)
+        plot_confusion_matrix(y_actual, y_prediction, title=title)
 
     if roc_curve_plotting:
         plt.figure()
@@ -103,10 +98,8 @@ def plot_roc_curves(y_actual, y_predictions):
         y_predictions[key] = y_predictions[key].reset_index(drop=True)
         assert len(y_actual) == len(y_predictions[key])
 
-        y_prediction_round = y_predictions[key].apply(custom_round)
-
         # Calculate ROC and AUC
-        fpr, tpr, _ = roc_curve(y_actual, y_prediction_round)
+        fpr, tpr, _ = roc_curve(y_actual, y_predictions[key])
         AUC = auc(fpr, tpr)
 
         plot_roc_curve(fpr, tpr, AUC, title='Regression Comparison', label=key, color=cmaps(index))
@@ -119,17 +112,19 @@ if __name__ == '__main__':
     from data.data_reader import get_training_data
     from data.data_combinator import get_full_combinations
     from stats.regression_calculator import get_ridge_regression, get_logistic_regression, get_lasso_regression, \
-        get_linear_discriminant_analysis, get_quadratic_discriminant_analysis, get_naive_bayes, get_random_forest
+        get_linear_discriminant_analysis, get_quadratic_discriminant_analysis, get_naive_bayes, get_random_forest, \
+        get_select_more_follower_count
 
-    alpha = 0.063
+    alpha = 0.062
 
     x_train, y_train, x_val, y_val = get_training_data(validation=True)
+    original_x_val = x_val.copy()
     x_train = get_full_combinations(x_train)
     x_val = get_full_combinations(x_val)
 
-    title = 'Ridge regression, alpha={}'.format(alpha)
+    title = 'Select more follower count'
     print(title)
-    y_prediction = get_ridge_regression(x_train, y_train, x_val, alpha)
+    y_prediction = get_select_more_follower_count(x_train, y_train, original_x_val)
     accuracy, f1_score, AUC = evaluate_predictions(y_val, y_prediction, title=title,
                                                    confusion_matrix_plotting=True,
                                                    roc_curve_plotting=True)
@@ -139,14 +134,14 @@ if __name__ == '__main__':
     print('-' * 70)
 
     y_predictions = {
-        'Ridge regression, alpha={}'.format(alpha): get_ridge_regression(x_train, y_train, x_val, alpha),
+        'Ridge regression, alpha={}'.format(alpha): get_ridge_regression(x_train, y_train, x_val, alpha, summary=True),
         'Logistic regression, alpha={}'.format(alpha): get_logistic_regression(x_train, y_train, x_val, alpha),
-        'Lasso regression, alpha={}'.format(alpha): get_lasso_regression(x_train, y_train, x_val, alpha),
+        'Lasso regression, alpha={}'.format(alpha): get_lasso_regression(x_train, y_train, x_val, alpha, summary=True),
         'LDA regression, alpha={}'.format(alpha): get_linear_discriminant_analysis(x_train, y_train, x_val, alpha),
         'QDA regression, alpha={}'.format(alpha): get_quadratic_discriminant_analysis(x_train, y_train, x_val, alpha),
         'NB regression, alpha={}'.format(alpha): get_naive_bayes(x_train, y_train, x_val, alpha),
-        'RF regression, alpha={}'.format(alpha): get_random_forest(x_train, y_train, x_val, alpha)
+        'RF regression, alpha={}'.format(alpha): get_random_forest(x_train, y_train, x_val, alpha),
+        'Select more follower count': get_select_more_follower_count(x_train, y_train, original_x_val)
     }
     plot_roc_curves(y_val, y_predictions)
     plt.show()
-
