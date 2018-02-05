@@ -9,9 +9,12 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 from sklearn.linear_model import Ridge, LogisticRegression, Lasso
 from sklearn.naive_bayes import GaussianNB
+from scipy import stats
+
 
 COLUMN_NAME = 'column_name'
 COEFFICIENT_VALUE = 'coefficient_value'
+P_VALUE = 'p-value'
 
 
 def custom_round(number):
@@ -60,8 +63,14 @@ def get_ridge_regression(x_train, y_train, x_test, alpha, summary=False):
     model.fit(x_train, y_train)
 
     if summary:
-        model_coef = pd.DataFrame(data=list(zip(x_train.columns, np.abs(model.coef_))),
-                                  columns=[COLUMN_NAME, COEFFICIENT_VALUE])
+        # Calculate coefficients and p-values
+        standard_error = np.sum((model.predict(X=x_train) - y_train) ** 2, axis=0) / float(x_train.shape[0] - x_train.shape[1])
+        t_statistics = model.coef_ / standard_error
+        p_values = 2 * (1 - stats.t.cdf(np.abs(t_statistics), y_train.shape[0] - x_train.shape[1]))
+
+        model_coef = pd.DataFrame(data=list(zip(x_train.columns, np.abs(model.coef_), p_values)),
+                                  columns=[COLUMN_NAME, COEFFICIENT_VALUE, P_VALUE])
+
         model_coef = model_coef.sort_values(by=COEFFICIENT_VALUE, ascending=False)
         print(model_coef)
 
@@ -92,8 +101,14 @@ def get_lasso_regression(x_train, y_train, x_test, alpha, summary=False):
     model.fit(X=x_train, y=y_train)
 
     if summary:
-        model_coef = pd.DataFrame(data=list(zip(x_train.columns, np.abs(model.coef_))),
-                                  columns=[COLUMN_NAME, COEFFICIENT_VALUE])
+        # Calculate coefficients and p-values
+        standard_error = np.sum((model.predict(X=x_train) - y_train) ** 2, axis=0) / float(x_train.shape[0] - x_train.shape[1])
+        t_statistics = model.coef_ / standard_error
+        p_values = 2 * (1 - stats.t.cdf(np.abs(t_statistics), y_train.shape[0] - x_train.shape[1]))
+
+        model_coef = pd.DataFrame(data=list(zip(x_train.columns, np.abs(model.coef_), p_values)),
+                                  columns=[COLUMN_NAME, COEFFICIENT_VALUE, P_VALUE])
+
         model_coef = model_coef.sort_values(by=COEFFICIENT_VALUE, ascending=False)
         print(model_coef)
 
@@ -224,7 +239,7 @@ if __name__ == '__main__':
     from data.data_reader import get_training_data
     from data.data_combinator import get_full_combinations
 
-    alpha = 0.001
+    alpha = 0.002
 
     x_train, y_train, x_val, y_val = get_training_data(validation=True)
     x_train = get_full_combinations(x_train)
@@ -239,7 +254,7 @@ if __name__ == '__main__':
     print('-' * 70)
 
     print('Ridge Regression')
-    y_prediction = get_ridge_regression(x_train, y_train, x_val, alpha)
+    y_prediction = get_ridge_regression(x_train, y_train, x_val, alpha, True)
     result = pd.concat([y_val, y_prediction], axis=1)
     print(result.head())
     print('-' * 70)
