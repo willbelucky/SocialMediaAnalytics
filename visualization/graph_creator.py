@@ -12,7 +12,8 @@ from data.data_combinator import get_full_combinations, get_sub_combinations, ge
 from data.data_reader import get_training_data
 from evaluation.evaluator import evaluate_predictions
 from stats.regression_calculator import get_ridge_regression, get_logistic_regression, get_lasso_regression, \
-    get_linear_discriminant_analysis, get_quadratic_discriminant_analysis, get_naive_bayes, get_random_forest
+    get_linear_discriminant_analysis, get_quadratic_discriminant_analysis, get_naive_bayes, get_random_forest, \
+    get_select_more_follower_count
 
 # A key for index value.
 ALPHA = 'alpha'
@@ -38,7 +39,10 @@ GNB_AUC = 'gnb_auc'
 # Keys for rf.
 RF_AUC = 'rf_auc'
 
-REGRESSION_COMPARISON_AUCS = [LOGISTIC_AUC, RIDGE_AUC, LASSO_AUC, LDA_AUC, QDA_AUC, GNB_AUC, RF_AUC]
+# Keys for smfc.
+SMFC_AUC = 'smfc_auc'
+
+REGRESSION_COMPARISON_AUCS = [LOGISTIC_AUC, RIDGE_AUC, LASSO_AUC, LDA_AUC, QDA_AUC, GNB_AUC, RF_AUC, SMFC_AUC]
 
 
 def draw_regression_comparison_graph(from_alpha, to_alpha, step, combination_function=get_full_combinations):
@@ -55,6 +59,7 @@ def draw_regression_comparison_graph(from_alpha, to_alpha, step, combination_fun
 
     x_train, y_train, x_val, y_val = get_training_data(validation=True)
     x_train = combination_function(x_train)
+    original_x_val = x_val.copy()
     x_val = combination_function(x_val)
 
     # Dictionary for saving results.
@@ -81,6 +86,10 @@ def draw_regression_comparison_graph(from_alpha, to_alpha, step, combination_fun
     # RF
     rf_y_prediction = get_random_forest(x_train, y_train, x_val)
     _, _, rf_auc = evaluate_predictions(y_val, rf_y_prediction)
+
+    # SMFC
+    smfc_y_prediction = get_select_more_follower_count(x_train, y_train, original_x_val)
+    _, _, smfc_auc = evaluate_predictions(y_val, smfc_y_prediction)
 
     for alpha in np.arange(from_alpha, to_alpha, step):
         # Ridge regression
@@ -115,6 +124,9 @@ def draw_regression_comparison_graph(from_alpha, to_alpha, step, combination_fun
         # Save results of rf.
         evaluation_results_dict[RF_AUC].append(rf_auc)
 
+        # Save results of smfc.
+        evaluation_results_dict[SMFC_AUC].append(smfc_auc)
+
     evaluation_results_df = pd.DataFrame(data=evaluation_results_dict)
 
     # Print peek points
@@ -123,7 +135,8 @@ def draw_regression_comparison_graph(from_alpha, to_alpha, step, combination_fun
         print('The highest {}={} when alpha={}'.format(auc, highest_auc_row[auc], highest_auc_row[ALPHA]))
 
     evaluation_results_df = evaluation_results_df.set_index([ALPHA])
-    evaluation_results_df.plot(title='Logistic vs. Ridge vs. Lasso vs. GNB vs. LDA vs. QDA', grid=True, ylim=(0.0, 1))
+    evaluation_results_df.plot(title='Logistic vs. Ridge vs. Lasso vs. GNB vs. LDA vs. QDA vs. SMFC', grid=True,
+                               ylim=(0.0, 1))
     plt.show()
 
 
