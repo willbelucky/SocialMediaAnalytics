@@ -1,4 +1,3 @@
-import csv
 import json
 from collections import defaultdict
 
@@ -16,7 +15,7 @@ auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 
 api = tweepy.API(auth, wait_on_rate_limit=True)
-query = 'sport'
+query = 'music'
 max_tweets = 5000
 searched_tweets = [status._json for status in tweepy.Cursor(api.search, q=query).items(max_tweets)]
 json_strings = [json.dumps(json_obj) for json_obj in searched_tweets]
@@ -29,6 +28,7 @@ d = defaultdict(list)
       (iii) Mentions C               (A-C Mentions)
 
 """
+
 
 for i in range(max_tweets):
     datastore = json.loads(json_strings[i])
@@ -108,6 +108,7 @@ for i in range(max_tweets):
                     # column3
                     print("RT")
                     d["Column3"].append("RT")
+
                     last_RT = j
 
                     if last_RT == number_of_users - 1:
@@ -119,6 +120,7 @@ for i in range(max_tweets):
 
                         print(datastore["entities"]["user_mentions"][last_RT]['screen_name'])
                         d["Column3"].append("tweets")
+
                     else:
                         continue
                 else:
@@ -138,3 +140,4 @@ for i in range(max_tweets):
 df = pd.DataFrame.from_dict(d)
 df.reset_index(drop=True)
 df.to_csv(DATA_DIR + 'my_file.csv', index=False)
+
