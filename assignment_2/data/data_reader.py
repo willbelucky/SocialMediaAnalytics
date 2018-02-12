@@ -4,6 +4,7 @@
 :Date: 2018. 2. 9.
 """
 from os import walk
+from datetime import datetime
 
 import pandas as pd
 
@@ -37,7 +38,7 @@ def get_speeches(selected_presidents=None):
         with open(SPEECH_DIR + file_name, 'r', encoding='unicode_escape') as file:
             # file_name example
             # 2010-01-01 president_name.txt
-            date = file_name[:10]
+            date = datetime.strptime(file_name[:10], '%Y-%m-%d')
             president = file_name[11:-4]
             script = file.read().replace('\n', '')
             if president in selected_presidents:
