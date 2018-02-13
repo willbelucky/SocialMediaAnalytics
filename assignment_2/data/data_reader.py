@@ -40,7 +40,7 @@ def get_speeches(selected_presidents=None):
             # 2010-01-01 president_name.txt
             date = datetime.strptime(file_name[:10], '%Y-%m-%d')
             president = file_name[11:-4]
-            script = file.read().replace('\n', '')
+            script = file.read().replace('\n', '').replace('"', '').replace(',', '')
             if president in selected_presidents:
                 dates.append(date)
                 presidents.append(president)
@@ -63,3 +63,5 @@ if __name__ == '__main__':
     speeches = get_speeches()
     print(len(speeches))
     print(speeches.head())
+
+    speeches.to_csv('assignment_2/data/speech.csv')
