@@ -6,3 +6,11 @@
 
 # Log files
 *.log
+
+# Data files
+*.xls
+*.csv
+*.h5
+
+# Image files
+*.png
