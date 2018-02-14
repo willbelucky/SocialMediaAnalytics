@@ -3,18 +3,21 @@
 # Created by: willbe
 # Created on: 2/12/18
 
-# install.packages("ldatuning")
-# install.packages("tm")
-# install.packages("sets")
+install.packages("ldatuning")
+install.packages("tm")
+install.packages("sets")
 
 library("ldatuning")
 library("tm")
 library("sets")
 
 # Load a csv file.
-setwd("/Users/willbe/PycharmProjects/SocialMediaAnalytics")
-speeches = read.csv("assignment_2/data/speech.csv", header = T)
+# Session > Set Working Directory > Choose Directory...
+# Set the root folder of project to a working directory.
+speeches = read.csv("assignment_2\\data\\speech.csv", header = T)
 presidents = as.list(as.set(speeches$president))
+best_topic_num = c()
+best_arun2010 = c()
 
 for (president in presidents) {
   # select speeches by president:
@@ -22,7 +25,7 @@ for (president in presidents) {
 
   # pre-processing:
   stop_words <- stopwords("SMART")
-  scripts <- gsub("'", "", speeches$script)  # remove apostrophes
+  scripts <- gsub("'", "", speeches_per_president$script)  # remove apostrophes
   scripts <- gsub("[[:punct:]]", " ", scripts)  # replace punctuation with space
   scripts <- gsub("[[:cntrl:]]", " ", scripts)  # replace control characters with space
   scripts <- gsub("^[[:space:]]+", "", scripts) # remove whitespace at beginning of documents
@@ -62,16 +65,21 @@ for (president in presidents) {
   # Find the best topic number:
   result <- FindTopicsNumber(
     speeches_dtm,
-    topics = seq(from = 2, to = 25, by = 1),
+    topics = seq(from = 2, to = 30, by = 1),
     metrics = c("Arun2010"),
     method = "Gibbs",
     control = list(seed = 77),
-    mc.cores = 2L,
+    mc.cores = 28L,
     verbose = TRUE
   )
   
   # Plot the result:
   print(president)
   FindTopicsNumber_plot(result)
+  min_index = which.min(result$Arun2010)
+  best_topic_num = append(best_topic_num, min_index)
+  best_arun2010 = append(best_arun2010, result$Arun2010[min_index])
 }
+
+final_result = data.frame(best_topic_num, best_arun2010)
 

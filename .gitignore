@@ -4,6 +4,10 @@
 .idea
 .cache
 
+# R file
+.RData
+.Rhistory
+
 # Log files
 *.log
 
