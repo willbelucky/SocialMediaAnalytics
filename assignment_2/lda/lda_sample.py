@@ -53,10 +53,20 @@ def get_lda_model(doc_set, num_topics, num_words):
 
 if __name__ == '__main__':
     from assignment_2.data.president import *
+
     # create sample documents
     speeches = get_speeches()
 
     # compile sample documents into a list
     doc_set = speeches['script'].tolist()
 
-    get_lda_model(doc_set, 5, 10)
+    # Print 24 topics of all speeches.
+    get_lda_model(doc_set, 24, 20)
+
+    # Print 1 topic for every speech.
+    # for i in doc_set:
+        # get_lda_model([i], 1, 20)
+
+    # Print data and president list.
+    # for ((date, president), script) in speeches.iterrows():
+    #     print(date, president)

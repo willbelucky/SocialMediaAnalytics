@@ -18,3 +18,13 @@
 
 # Image files
 *.png
+
+.DS_Store
+assignment_1/data/__pycache__/
+assignment_1/evaluation/__pycache__/
+assignment_1/stats/__pycache__/
+assignment_2/.DS_Store
+assignment_2/__pycache__/
+assignment_2/data/.DS_Store
+assignment_2/data/__pycache__/
+util/__pycache__/
