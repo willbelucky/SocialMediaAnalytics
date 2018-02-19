@@ -81,13 +81,13 @@ find_the_best_topic_number <- function(scripts){
 # Load a csv file.
 # Session > Set Working Directory > Choose Directory...
 # Set the root folder of project to a working directory.
-speeches = read.csv("assignment_2\\data\\speech.csv", header = T)
+speeches = read.csv("assignment_2/data/speech.csv", header = T)
 presidents = as.set(speeches$president)
 best_topic_nums = c()
 
 # find the best topic number of all scripts.
 president = 'All'
-# find_the_best_topic_number(speeches$script)
+find_the_best_topic_number(speeches$script)
 
 # find the best topic number of each president.
 for (president in presidents) {
@@ -98,4 +98,3 @@ for (president in presidents) {
 
 final_result = data.frame(as.list(presidents), best_topic_nums)
 write.csv(final_result, file="best_topic_num.csv")
-
