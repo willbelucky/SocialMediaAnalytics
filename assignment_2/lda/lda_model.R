@@ -1,135 +1,729 @@
 install.packages("gutenbergr")
+install.packages("tidytext")
+install.packages("psych")
+install.packages("scales")
 
-library(gutenbergr)
-library(stringr)
-library(ggplot2)
+library("stringr")
+library("ggplot2")
+library("dplyr")
+library("tidytext")
+library("tm")
+library("topicmodels")
+library(scales)
+
+
+myStopwords <-
+  c(
+    'and',
+    'the',
+    'men',
+    'you',
+    'man',
+    'but',
+    'asking',
+    'associated',
+    'at',
+    'available',
+    'away',
+    'awfully',
+    'back',
+    'backward',
+    'backwards',
+    'be',
+    'became',
+    'because',
+    'become',
+    'becomes',
+    'becoming',
+    'been',
+    'before',
+    'beforehand',
+    'begin',
+    'behind',
+    'being',
+    'believe',
+    'below',
+    'beside',
+    'besides',
+    'best',
+    'better',
+    'between',
+    'beyond',
+    'both',
+    'brief',
+    'but',
+    'by',
+    'came',
+    'can',
+    'cannot',
+    'cant',
+    "can't",
+    'caption',
+    'cause',
+    'causes',
+    'certain',
+    'certainly',
+    'changes',
+    'clearly',
+    "c'mon",
+    'co',
+    'co.',
+    'com',
+    'come',
+    'comes',
+    'concerning',
+    'congress',
+    'consequently',
+    'consider',
+    'considering',
+    'contain',
+    'containing',
+    'contains',
+    'country',
+    'corresponding',
+    'could',
+    "couldn't",
+    'course',
+    "c's",
+    'currently',
+    'dare',
+    "daren't",
+    'definitely',
+    'described',
+    'despite',
+    'did',
+    "didn't",
+    'different',
+    'directly',
+    'do',
+    'does',
+    "doesn't",
+    'doing',
+    'done',
+    "don't",
+    'down',
+    'downwards',
+    'during',
+    'each',
+    'edu',
+    'eg',
+    'eight',
+    'eighty',
+    'either',
+    'else',
+    'elsewhere',
+    'end',
+    'ending',
+    'enough',
+    'entirely',
+    'especially',
+    'et',
+    'etc',
+    'even',
+    'ever',
+    'evermore',
+    'every',
+    'everybody',
+    'everyone',
+    'everything',
+    'everywhere',
+    'ex',
+    'exactly',
+    'example',
+    'except',
+    'fairly',
+    'far',
+    'farther',
+    'few',
+    'fewer',
+    'fifth',
+    'first',
+    'five',
+    'followed',
+    'following',
+    'follows',
+    'for',
+    'forever',
+    'former',
+    'formerly',
+    'forth',
+    'forward',
+    'found',
+    'four',
+    'from',
+    'further',
+    'furthermore',
+    'get',
+    'gets',
+    'getting',
+    'given',
+    'gives',
+    'go',
+    'good',
+    'government',
+    'goes',
+    'going',
+    'gone',
+    'got',
+    'gotten',
+    'great',
+    'greetings',
+    'had',
+    "hadn't",
+    'half',
+    'happens',
+    'hardly',
+    'has',
+    "hasn't",
+    'have',
+    "haven't",
+    'having',
+    'he',
+    "he'd",
+    "he'll",
+    'hello',
+    'help',
+    'hence',
+    'her',
+    'here',
+    'hereafter',
+    'hereby',
+    'herein',
+    "here's",
+    'hereupon',
+    'hers',
+    'herself',
+    "he's",
+    'hi',
+    'him',
+    'himself',
+    'his',
+    'hither',
+    'hopefully',
+    'how',
+    'howbeit',
+    'however',
+    'hundred',
+    "i'd",
+    'ie',
+    'if',
+    'ignored',
+    "i'll",
+    "i'm",
+    'immediate',
+    'in',
+    'inasmuch',
+    'inc',
+    'inc.',
+    'indeed',
+    'indicate',
+    'indicated',
+    'indicates',
+    'inner',
+    'inside',
+    'insofar',
+    'instead',
+    'into',
+    'inward',
+    'is',
+    "isn't",
+    'it',
+    "it'd",
+    "it'll",
+    'its',
+    "it's",
+    'itself',
+    "i've",
+    'just',
+    'k',
+    'keep',
+    'keeps',
+    'kept',
+    'know',
+    'known',
+    'knows',
+    'last',
+    'lately',
+    'later',
+    'latter',
+    'latterly',
+    'least',
+    'less',
+    'lest',
+    'let',
+    "let's",
+    'like',
+    'liked',
+    'likely',
+    'likewise',
+    'little',
+    'look',
+    'looking',
+    'looks',
+    'low',
+    'lower',
+    'ltd',
+    'made',
+    'mainly',
+    'make',
+    'makes',
+    'many',
+    'may',
+    'maybe',
+    "mayn't",
+    'me',
+    'mean',
+    'meantime',
+    'meanwhile',
+    'merely',
+    'might',
+    "mightn't",
+    'mine',
+    'minus',
+    'miss',
+    'more',
+    'moreover',
+    'most',
+    'mostly',
+    'mr',
+    'mr.',
+    'mrs',
+    'much',
+    'must',
+    "mustn't",
+    'my',
+    'myself',
+    'name',
+    'namely',
+    'nation',
+    'nations',
+    'nd',
+    'near',
+    'nearly',
+    'necessary',
+    'need',
+    "needn't",
+    'needs',
+    'neither',
+    'never',
+    'neverf',
+    'neverless',
+    'nevertheless',
+    'new',
+    'next',
+    'nine',
+    'ninety',
+    'no',
+    'nobody',
+    'non',
+    'none',
+    'nonetheless',
+    'noone',
+    'no-one',
+    'nor',
+    'normally',
+    'not',
+    'nothing',
+    'notwithstanding',
+    'novel',
+    'now',
+    'nowhere',
+    'obviously',
+    'of',
+    'off',
+    'often',
+    'oh',
+    'ok',
+    'okay',
+    'old',
+    'on',
+    'once',
+    'one',
+    'ones',
+    "one's",
+    'only',
+    'onto',
+    'opposite',
+    'or',
+    'other',
+    'others',
+    'otherwise',
+    'ought',
+    "oughtn't",
+    'our',
+    'ours',
+    'ourselves',
+    'out',
+    'outside',
+    'over',
+    'overall',
+    'own',
+    'particular',
+    'particularly',
+    'past',
+    'per',
+    'perhaps',
+    'placed',
+    'please',
+    'plus',
+    'possible',
+    'president',
+    'presumably',
+    'probably',
+    'provided',
+    'provides',
+    'public',
+    'que',
+    'quite',
+    'qv',
+    'rather',
+    'rd',
+    're',
+    'really',
+    'reasonably',
+    'recent',
+    'recently',
+    'regarding',
+    'regardless',
+    'regards',
+    'relatively',
+    'respectively',
+    'right',
+    'round',
+    'said',
+    'same',
+    'saw',
+    'say',
+    'saying',
+    'says',
+    'second',
+    'secondly',
+    'see',
+    'seeing',
+    'seem',
+    'seemed',
+    'seeming',
+    'seems',
+    'seen',
+    'self',
+    'selves',
+    'sensible',
+    'sent',
+    'serious',
+    'seriously',
+    'seven',
+    'several',
+    'shall',
+    "shan't",
+    'she',
+    "she'd",
+    "she'll",
+    "she's",
+    'should',
+    "shouldn't",
+    'since',
+    'six',
+    'so',
+    'some',
+    'somebody',
+    'someday',
+    'somehow',
+    'someone',
+    'something',
+    'sometime',
+    'sometimes',
+    'somewhat',
+    'somewhere',
+    'soon',
+    'sorry',
+    'specified',
+    'specify',
+    'specifying',
+    'still',
+    'state',
+    'states',
+    'sub',
+    'such',
+    'sup',
+    'sure',
+    'take',
+    'taken',
+    'taking',
+    'tell',
+    'tends',
+    'th',
+    'than',
+    'thank',
+    'thanks',
+    'thanx',
+    'that',
+    "that'll",
+    'thats',
+    "that's",
+    "that've",
+    'the',
+    'their',
+    'theirs',
+    'them',
+    'themselves',
+    'then',
+    'thence',
+    'there',
+    'thereafter',
+    'thereby',
+    "there'd",
+    'therefore',
+    'therein',
+    "there'll",
+    "there're",
+    'theres',
+    "there's",
+    'thereupon',
+    "there've",
+    'these',
+    'they',
+    "they'd",
+    "they'll",
+    "they're",
+    "they've",
+    'thing',
+    'things',
+    'think',
+    'third',
+    'thirty',
+    'this',
+    'thorough',
+    'thoroughly',
+    'those',
+    'though',
+    'three',
+    'through',
+    'throughout',
+    'thru',
+    'thus',
+    'till',
+    'time',
+    'to',
+    'together',
+    'too',
+    'took',
+    'toward',
+    'towards',
+    'tried',
+    'tries',
+    'truly',
+    'try',
+    'trying',
+    "t's",
+    'twice',
+    'two',
+    'un',
+    'under',
+    'underneath',
+    'undoing',
+    'unfortunately',
+    'united',
+    'unless',
+    'unlike',
+    'unlikely',
+    'until',
+    'unto',
+    'up',
+    'upon',
+    'upwards',
+    'us',
+    'use',
+    'used',
+    'useful',
+    'uses',
+    'using',
+    'usually',
+    'v',
+    'value',
+    'various',
+    'versus',
+    'very',
+    'via',
+    'viz',
+    'vs',
+    'want',
+    'wants',
+    'was',
+    "wasn't",
+    'way',
+    'we',
+    "we'd",
+    'welcome',
+    'well',
+    "we'll",
+    'went',
+    'were',
+    "we're",
+    "weren't",
+    "we've",
+    'what',
+    'whatever',
+    "what'll",
+    "what's",
+    "what've",
+    'when',
+    'whence',
+    'whenever',
+    'where',
+    'whereafter',
+    'whereas',
+    'whereby',
+    'wherein',
+    "where's",
+    'whereupon',
+    'wherever',
+    'whether',
+    'which',
+    'whichever',
+    'while',
+    'whilst',
+    'whither',
+    'who',
+    "who'd",
+    'whoever',
+    'whole',
+    "who'll",
+    'whom',
+    'whomever',
+    "who's",
+    'whose',
+    'why',
+    'will',
+    'willing',
+    'wish',
+    'with',
+    'within',
+    'without',
+    'wonder',
+    "won't",
+    'world',
+    'would',
+    "wouldn't",
+    'year',
+    'years',
+    'yes',
+    'yet',
+    'you',
+    "you'd",
+    "you'll",
+    'your',
+    "you're",
+    'yours',
+    'yourself',
+    'yourselves',
+    "you've",
+    'zero'
+  )
+
+#load files into corpus
+#get listing of .txt files in directory
+filenames <- list.files("assignment_2\\data\\speech",pattern="*.txt")
 
 # Load a csv file.
 # Session > Set Working Directory > Choose Directory...
 # Set the root folder of project to a working directory.
-speeches = read.csv("assignment_2\\data\\speech.csv", header = T)
+speeches = read.csv("assignment_2\\data\\speech.csv", header = T, stringsAsFactors = FALSE)
 
-titles <- c("Twenty Thousand Leagues under the Sea", "The War of the Worlds",
-            "Pride and Prejudice", "Great Expectations")
+# Unite date and president to speech
+by_speech <- speeches %>%
+  unite(speech, date, president)
 
+# Script to word tokens
+by_speech_word <- by_speech %>%
+  unnest_tokens(word, script)
 
-books <- gutenberg_works(title %in% titles) %>%
-  gutenberg_download(meta_fields = "title")
-
-
-# divide into documents, each representing one chapter
-by_chapter <- books %>%
-  group_by(title) %>%
-  mutate(chapter = cumsum(str_detect(text, regex("^chapter ", ignore_case = TRUE)))) %>%
-  ungroup() %>%
-  filter(chapter > 0) %>%
-  unite(document, title, chapter)
-
-# split into words
-by_chapter_word <- by_chapter %>%
-  unnest_tokens(word, text)
-
-# find document-word counts
-word_counts <- by_chapter_word %>%
+# Delete stop_words and count words.
+speech_word_counts <- by_speech_word %>%
   anti_join(stop_words) %>%
-  count(document, word, sort = TRUE) %>%
+  count(speech, word, sort = TRUE) %>%
   ungroup()
 
-word_counts
+# Make speech_word_counts DTM
+speech_dtm <- speech_word_counts %>%
+  cast_dtm(speech, word, n)
 
+# Do LDA
+speech_lda <- LDA(speech_dtm, k = 24, control = list(seed = 1234))
 
-chapters_dtm <- word_counts %>%
-  cast_dtm(document, word, n)
+# Tidy data is a standard way of mapping the meaning of a dataset to its structure.
+# A dataset is messy or tidy depending on how rows,
+# columns and tables are matched up with observations, variables and types.
+speech_topics_by_beta <- tidy(speech_lda, matrix = "beta")
 
-chapters_dtm
-
-chapters_lda <- LDA(chapters_dtm, k = 4, control = list(seed = 1234))
-chapters_lda
-
-chapter_topics <- tidy(chapters_lda, matrix = "beta")
-chapter_topics
-
-top_terms <- chapter_topics %>%
+# Get top 20 words per topic.
+speech_top_terms <- speech_topics_by_beta %>%
   group_by(topic) %>%
-  top_n(5, beta) %>%
+  top_n(20, beta) %>%
   ungroup() %>%
   arrange(topic, -beta)
 
-top_terms
-
-
-
-top_terms %>%
+# Save plot
+png(filename = "top_20_words_per_topic.png", width = 1920, height = 1080)
+speech_top_terms %>%
   mutate(term = reorder(term, beta)) %>%
   ggplot(aes(term, beta, fill = factor(topic))) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~ topic, scales = "free") +
   coord_flip()
+dev.off()
 
-chapters_gamma <- tidy(chapters_lda, matrix = "gamma")
-chapters_gamma
+speech_topics_by_gamma <- tidy(speech_lda, matrix = "gamma")
 
+speech_topics_by_gamma <- speech_topics_by_gamma %>%
+  separate(document, c("date", "president"), sep = "_", convert = TRUE)
 
-chapters_gamma <- chapters_gamma %>%
-  separate(document, c("title", "chapter"), sep = "_", convert = TRUE)
-chapters_gamma
-
-chapters_gamma %>%
-  mutate(title = reorder(title, gamma * topic)) %>%
-  ggplot(aes(factor(topic), gamma)) +
-  geom_boxplot() +
-  facet_wrap(~ title)
-
-chapter_classifications <- chapters_gamma %>%
-  group_by(title, chapter) %>%
+speech_classifications <- speech_topics_by_gamma %>%
+  group_by(date, president) %>%
   top_n(1, gamma) %>%
   ungroup()
-chapter_classifications
 
-
-book_topics <- chapter_classifications %>%
-  count(title, topic) %>%
-  group_by(title) %>%
+president_topics <- speech_classifications %>%
+  count(president, topic) %>%
+  group_by(president) %>%
   top_n(1, n) %>%
   ungroup() %>%
-  transmute(consensus = title, topic)
+  transmute(consensus = president, topic)
 
-chapter_classifications %>%
-  inner_join(book_topics, by = "topic") %>%
-  filter(title != consensus)
+president_classifications <- speech_classifications %>%
+  inner_join(president_topics, by = "topic") %>%
+  filter(president != consensus)
+president_classifications
 
-assignments <- augment(chapters_lda, data = chapters_dtm)
-assignments
+assignments <- augment(speech_lda, data = speech_dtm)
 
 assignments <- assignments %>%
-  separate(document, c("title", "chapter"), sep = "_", convert = TRUE) %>%
-  inner_join(book_topics, by = c(".topic" = "topic"))
+  separate(document, c("date", "president"), sep = "_", convert = TRUE) %>%
+  inner_join(president_topics, by = c(".topic" = "topic"))
 
-assignments
-
-
+png(filename = "president_similarity.png", width = 1920, height = 1080)
 assignments %>%
-  count(title, consensus, wt = count) %>%
-  group_by(title) %>%
+  count(president, consensus, wt = count) %>%
+  group_by(president) %>%
   mutate(percent = n / sum(n)) %>%
-  ggplot(aes(consensus, title, fill = percent)) +
+  ggplot(aes(consensus, president, fill = percent)) +
   geom_tile() +
   scale_fill_gradient2(high = "red", label = percent_format()) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1),
         panel.grid = element_blank()) +
-  labs(x = "Book words were assigned to",
-       y = "Book words came from",
+  labs(x = "Words were assigned to",
+       y = "Words came from",
        fill = "% of assignments")
+dev.off()
 
 wrong_words <- assignments %>%
-  filter(title != consensus)
+  filter(president != consensus)
 
 wrong_words
 
 
 wrong_words %>%
-  count(title, consensus, term, wt = count) %>%
+  count(president, consensus, term, wt = count) %>%
   ungroup() %>%
   arrange(desc(n))
 

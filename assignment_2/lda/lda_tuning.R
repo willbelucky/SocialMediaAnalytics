@@ -11,21 +11,11 @@ library("ldatuning")
 library("tm")
 library("sets")
 
-# Load a csv file.
-# Session > Set Working Directory > Choose Directory...
-# Set the root folder of project to a working directory.
-speeches = read.csv("assignment_2\\data\\speech.csv", header = T)
-presidents = as.list(as.set(speeches$president))
-best_topic_num = c()
-best_arun2010 = c()
-
-for (president in presidents) {
-  # select speeches by president:
-  speeches_per_president = speeches[speeches$president==president,]
-
+find_the_best_topic_number <- function(scripts){
+  
   # pre-processing:
   stop_words <- stopwords("SMART")
-  scripts <- gsub("'", "", speeches_per_president$script)  # remove apostrophes
+  scripts <- gsub("'", "", scripts)  # remove apostrophes
   scripts <- gsub("[[:punct:]]", " ", scripts)  # replace punctuation with space
   scripts <- gsub("[[:cntrl:]]", " ", scripts)  # replace control characters with space
   scripts <- gsub("^[[:space:]]+", "", scripts) # remove whitespace at beginning of documents
@@ -43,7 +33,7 @@ for (president in presidents) {
   del <- names(term.table) %in% stop_words | term.table < 5
   term.table <- term.table[!del]
   vocab <- names(term.table)
-  
+
   # now put the documents into the format required by the lda package:
   get.terms <- function(x) {
     index <- match(x, vocab)
@@ -75,11 +65,37 @@ for (president in presidents) {
   
   # Plot the result:
   print(president)
+  png(filename = paste(toString(president), ".png", sep = ""), width = 480, height = 320)
   FindTopicsNumber_plot(result)
-  min_index = which.min(result$Arun2010)
-  best_topic_num = append(best_topic_num, min_index)
-  best_arun2010 = append(best_arun2010, result$Arun2010[min_index])
+  
+  # Print best_topic_num
+  best_topic_num = which.min(result$Arun2010) + 1
+  print(best_topic_num)
+  # (prompt="Press [enter] to continue")
+  
+  dev.off()
+  
+  return(best_topic_num)
 }
 
-final_result = data.frame(best_topic_num, best_arun2010)
+# Load a csv file.
+# Session > Set Working Directory > Choose Directory...
+# Set the root folder of project to a working directory.
+speeches = read.csv("assignment_2\\data\\speech.csv", header = T)
+presidents = as.set(speeches$president)
+best_topic_nums = c()
+
+# find the best topic number of all scripts.
+president = 'All'
+# find_the_best_topic_number(speeches$script)
+
+# find the best topic number of each president.
+for (president in presidents) {
+  # select speeches by president:
+  speeches_per_president = speeches[speeches$president==president,]
+  best_topic_nums = append(best_topic_nums, find_the_best_topic_number(speeches_per_president$script))
+}
+
+final_result = data.frame(as.list(presidents), best_topic_nums)
+write.csv(final_result, file="best_topic_num.csv")
 

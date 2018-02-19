@@ -9,6 +9,7 @@ from datetime import datetime
 import pandas as pd
 
 from assignment_2.data.president import all_president_names
+from assignment_2.data.stop_words import custom_stop_words
 
 SPEECH_DIR = 'assignment_2/data/speech/'
 
@@ -40,7 +41,11 @@ def get_speeches(selected_presidents=None):
             # 2010-01-01 president_name.txt
             date = datetime.strptime(file_name[:10], '%Y-%m-%d')
             president = file_name[11:-4]
-            script = file.read().replace('\n', '').replace('"', '').replace(',', '')
+            script = file.read().replace('\n', '')
+
+            for stop_word in custom_stop_words:
+                script = script.replace(" " + stop_word + " ", " ")
+
             if president in selected_presidents:
                 dates.append(date)
                 presidents.append(president)
